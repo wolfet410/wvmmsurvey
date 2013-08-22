@@ -1,0 +1,121 @@
+.content {
+	padding-left: 15px;
+	padding-right: 15px;
+}
+.header {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 45px;
+	overflow: hidden;
+	background-color: #545050;
+	width: 100%;
+	font-size: 9px;
+	text-align: center;
+	font-family: arial;
+	color: white;
+}
+
+.headerleft {
+	float: left;
+	width: 45px;
+}
+
+.headerright {
+	/*float: center;*/
+	/*text-align: center;*/
+}
+
+.body {
+	top: 50px;
+	left: 0px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	background-color: #fafafa;
+	width: 100%;
+	padding-top: 50px;
+}
+
+.button, .button:visited {
+    width: 120px;
+    text-align: center;
+    font-family: arial;
+}
+
+.btnimg {
+  border: 0px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.center {
+	text-align: center;
+}
+
+.survey-heading {
+	font-family: arial;
+	font-size: 18px;
+	font-weight: bold;
+}
+
+.survey-question {
+	font-family: arial;
+	font-size: 14px;
+	padding-bottom: 8px;
+  text-indent: -10px;
+  padding-left: 10px;
+}
+
+.report-text {
+  font-family: arial;
+  font-size: 14px;
+  text-indent: -10px;
+  padding-left: 10px;
+}
+
+td.survey-question {
+	padding-bottom: 0px;
+	padding-left: 25px;
+	font-weight: bold;
+}
+
+.survey-question-table {
+	font-family: arial;
+	font-size: 14px;
+	padding-bottom: 8px;
+	width: 200px;
+	float: left;
+	padding-left: 10px;
+	padding-right: 10px;
+  text-indent: -10px;
+}
+
+.survey-radio {
+	font-family: arial;
+	font-size: 14px;
+	padding-left: 10px;
+}
+
+.survey-radio-table {
+	font-family: arial;
+	font-size: 14px;
+	padding-left: 10px;
+}
+
+.survey-textarea {
+	width: 350px;
+	height: 80px;
+	padding-left: 10px;
+}
+
+tr.oddrow {
+	background-color: #cdcdcd;
+}
+
+tr.evenrow {
+	background-color: #f0f0f0;
+}
+
+a.row-controls {
+	text-decoration: none;
+	color: black;
+}

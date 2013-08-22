@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery.support demo</title>
+  <style>
+  p { color:blue; margin:20px; }
+  span { color:red; }
+    </style>
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+</head>
+<body>
+  <p>
+    <a href="#" id="test">asdf</a>
+  </p>
+<script>
+$("a").each( function () { console.warn(this.id); });
+</script>
+ 
+</body>
+</html>
