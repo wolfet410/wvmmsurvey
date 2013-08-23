@@ -107,6 +107,7 @@ function actWriteQuestions() {
   // to avoid nullifying past survey results
   $oldquid = safe($_POST['oldquid']);
   $table = isset($_POST['table']) && !empty($_POST['table']) ? safe($_POST['table']) : 'false';
+  $rated = isset($_POST['rated']) && !empty($_POST['rated']) ? safe($_POST['rated']) : 'false';
   $type = safe($_POST['type']);
   $text = isset($_POST['text']) && !empty($_POST['text']) ? safe($_POST['text']) : '';
   $answers = isset($_POST['answers']) && !empty($_POST['answers']) ? safe($_POST['answers']) : '';
@@ -119,8 +120,8 @@ function actWriteQuestions() {
   $sort = mysql_result($r,0);
   if (!$sort) fnErrorDie("WVMMSURVEY: Empty sort value");
   // Write new row
-  $q = "INSERT INTO Questions (`active`, `sort`, `table`, `type`, `text`, `answers`, `notes`, `notestext`) "
-     . "VALUES ('true', '$sort', '$table', '$type', '".mysql_real_escape_string($text)."', '".mysql_real_escape_string($answers)
+  $q = "INSERT INTO Questions (`active`, `sort`, `table`, `rated`, `type`, `text`, `answers`, `notes`, `notestext`) "
+     . "VALUES ('true', '$sort', '$table', '$rated', '$type', '".mysql_real_escape_string($text)."', '".mysql_real_escape_string($answers)
      . "', '$notes', '".mysql_real_escape_string($notestext)."')";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems writing questions: " . mysql_error());
   // Deactivate old row
@@ -244,53 +245,31 @@ function updateOutput() {
       }
     }
   }
+  echo 0;
 }
 
 function csvBySurvey() {
   // CSV generation adapted from http://stackoverflow.com/a/12333533/1779382
-  $ans = array(array('Store','Date','Question','Text Response','Button Response'));
+  $ans = array(array('Store','Question Text','Notes Text','Button Response','Text Response','Respond Date/Time'));
   $suid = safe($_GET['surveyList']);
-  $q = "SELECT store,quids,userCreated FROM Surveys WHERE suid = $suid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting survey data during report: " . mysql_error());
-  $store = mysql_result($r,0);
-  $qarray = explode(",",mysql_result($r,0,1));
-  $date = mysql_result($r,0,2);
-  foreach ($qarray as $v) {
-    // Instead of doing it this way, why not make a reports table that is easier to query?
-    // For each question
-    // Determine if it's a radio or plain text
-    // If it's plain text, just send it as plain text
-    // To do this, we search if there's a radio with the text area
-    // If it's a radio, we need to get both the radio and latest text
-    $q = "SELECT quid,radio,textarea FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' AND suid = '$suid') AND quid = '$v' LIMIT 1";
-    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting csvBySurvey question results: " . mysql_error());
-    while ($a = mysql_fetch_assoc($r)) {
-      $q2 = "SELECT `text` FROM Questions WHERE quid = " . $a['quid'];
-      $r2 = mysql_query($q2) or fnErrorDie("WVMMSURVEY: Problems getting csvBySurvey question desc: " . mysql_error());
-      $qd = mysql_result($r2,0);
-      $ans[] = array($store,$date,$qd,$a['textarea'],$a['radio']);
-    }
+  $q = "SELECT store,qtext,notestext,radio,textarea,response FROM Output WHERE suid = $suid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data");
+  while ($a = mysql_fetch_assoc($r)) {
+    $ans[] = array($a['store'],$a['qtext'],$a['notestext'],$a['radio'],$a['textarea'],$a['response']);
   }
-  print_r($ans);
 
-  // $list = array (
-  //       array('aaa', 'bbb', 'ccc', 'dddd'),
-  //       array('123', '456', '789'),
-  //       array('"aaa"', '"bbb"')
-  //   );
+  header("Pragma: public");
+  header("Expires: 0");
+  header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+  header('Content-type: text/csv');
+  header("Content-Disposition: attachment;filename=file.csv");
+  header("Content-Transfer-Encoding: binary");
 
-  //   header("Pragma: public");
-  //   header("Expires: 0");
-  //   header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-  //   header('Content-type: text/csv');
-  //   header("Content-Disposition: attachment;filename=file.csv");
-  //   header("Content-Transfer-Encoding: binary");
-
-  //   $fp = fopen('php://output', 'a');
-  //   foreach ($list as $fields) {
-  //       fputcsv($fp, $fields);
-  //   }
-  //   fclose($fp);
+  $fp = fopen('php://output', 'a');
+  foreach ($ans as $fields) {
+      fputcsv($fp, $fields);
+  }
+  fclose($fp);
 }
 
 ?>

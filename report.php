@@ -20,10 +20,6 @@
       $(document).ready(function() {
         $('#saveStatus').css('display', 'none');
         // Update output table
-        new Messi('There may be a delay while updating the reporting table with the latest data', {
-          title: 'Updating...',
-          buttons: [{id: 0, label: 'OK', val: ''}],
-        });
         $.ajax({
           url: "wvmmsurvey.php", 
           type: 'POST',

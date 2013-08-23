@@ -119,3 +119,8 @@ a.row-controls {
 	text-decoration: none;
 	color: black;
 }
+
+ .ratingtext {
+ 	text-align: right;
+ 	width: 25%;
+ }

@@ -136,7 +136,7 @@ wvmmsurvey.make = {
                 html += '<label class="survey-radio';
                 html += val['table'] == 'true' ? '-table' : '';
                 html += '"><input type="radio" name="radio' + val['quid'] + '" '
-                     + 'id="radio' + val['quid'] + '" value="' + v + '">' + v 
+                     + 'id="radio' + val['quid'] + '" value="' + v + '">' + v.split('~')[0] 
                      + '</label>';
               });
               if (val['notes'] == "true") {
@@ -212,13 +212,13 @@ wvmmsurvey.make = {
           html += "<tr class='" + (eo % 2 == 0 ? 'evenrow' : 'oddrow') + "'>"
           // Sort column
                + "<td style='text-align:center;'>"
-               + "<a href='#' class='row-controls' id='add' title='Add a new row under this one'"
+               + "<a href='javascript:;' class='row-controls' id='add' title='Add a new row under this one'"
                + " onclick='wvmmsurvey.act.popupRow(\"Add\"," + val['quid'] + ")'>+</a>"
-               + "<a href='#' class='row-controls' id='del' title='Delete this row'"
+               + "<a href='javascript:;' class='row-controls' id='del' title='Delete this row'"
                + " onclick='wvmmsurvey.act.popupRow(\"Del\"," + val['quid'] + ")'>-</a>"
-               + "<a href='#' class='row-controls' id='up' title='Move this row up'"
+               + "<a href='javascript:;' class='row-controls' id='up' title='Move this row up'"
                + " onclick='wvmmsurvey.act.popupRow(\"Swap\"," + val['quid'] + ",\"up\")'>&uarr;</a>"
-               + "<a href='#' class='row-controls' id='down' title='Move this row down'"
+               + "<a href='javascript:;' class='row-controls' id='down' title='Move this row down'"
                + " onclick='wvmmsurvey.act.popupRow(\"Swap\"," + val['quid'] + ",\"down\")'>&darr;</a></td>"               
           // Type column
                + "<td><select id='type" + val['quid'] + "'>";
@@ -238,29 +238,79 @@ wvmmsurvey.make = {
               var aa = val['answers'].split(",");
               html += "Question:"
                    + "<br><input type='text' id='desc" + val['quid'] + "' value='" + val['text'] + "' style='width:622px;'>"
-                   + "<br>Radio button options:<br>"
-                   + "<input type='text' id='1ropt" + val['quid'] + "' value='" 
-                   + (typeof aa[0] != 'undefined' ? aa[0] : "") + "'>"
+                   + "<hr style='border: 1px dashed grey;'>Radio button options:"
+                   + "<br>Rated?<label><input type='radio' name='rated" + val['quid'] + "' id='rated" + val['quid'] + "' value='true'"
+                   + (val['rated'] == 'true' ? " checked='checked'" : "")
+                   + ">Yes</label><label>"
+                   + "<input type='radio' name='rated" + val['quid'] + "' id='rated" + val['quid'] + "' value='false'"
+                   + (val['rated'] == 'false' ? " checked='checked'" : "") 
+                   + ">No</label>"
+                   + "<br><input type='text' id='1ropt" + val['quid'] + "' value='" 
+                   + (typeof aa[0] != 'undefined' ? aa[0].split('~')[0] : "") + "'>"
                    + "<input type='text' id='2ropt" + val['quid'] + "' value='"
-                   + (typeof aa[1] != 'undefined' ? aa[1] : "") + "'>"
+                   + (typeof aa[1] != 'undefined' ? aa[1].split('~')[0] : "") + "'>"
                    + "<input type='text' id='3ropt" + val['quid'] + "' value='"
-                   + (typeof aa[2] != 'undefined' ? aa[2] : "") + "'>"
+                   + (typeof aa[2] != 'undefined' ? aa[2].split('~')[0] : "") + "'>"
                    + "<input type='text' id='4ropt" + val['quid'] + "' value='" 
-                   + (typeof aa[3] != 'undefined' ? aa[3] : "") + "'>"
-                   + "<br>Notes?<label><input type='radio' name='notes" + val['quid'] + "' value='true'"
+                   + (typeof aa[3] != 'undefined' ? aa[3].split('~')[0] : "") + "'>"
+                   + "<br><table id='ratingtable' width='100%'"
+                   + (val['rated'] == 'false' ? " style='display:none;'><tr>" : "><tr>")
+                   + "<td class='ratingtext'>"
+                   + (typeof aa[0] != 'undefined' ? 
+                      "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
+                      + "onclick='$(\"#1roptS\").html(parseInt($(\"#1roptS\").html()) + 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "<span id='1roptS'>" + (typeof aa[0].split('~')[1] != 'undefined' ? aa[0].split('~')[1] : "0") + "</span>"
+                      + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
+                      + "onclick='$(\"#1roptS\").html(parseInt($(\"#1roptS\").html()) - 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      : "</td>")
+                   + "<td class='ratingtext'>"
+                   + (typeof aa[1] != 'undefined' ? 
+                      "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
+                      + "onclick='$(\"#2roptS\").html(parseInt($(\"#2roptS\").html()) + 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "<span id='2roptS'>" + (typeof aa[1].split('~')[1] != 'undefined' ? aa[1].split('~')[1] : "0") + "</span>"
+                      + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
+                      + "onclick='$(\"#2roptS\").html(parseInt($(\"#2roptS\").html()) - 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      : "</td>")
+                   + "<td class='ratingtext'>"
+                   + (typeof aa[2] != 'undefined' ? 
+                      "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
+                      + "onclick='$(\"#3roptS\").html(parseInt($(\"#3roptS\").html()) + 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "<span id='3roptS'>" + (typeof aa[2].split('~')[1] != 'undefined' ? aa[2].split('~')[1] : "0") + "</span>"
+                      + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
+                      + "onclick='$(\"#3roptS\").html(parseInt($(\"#3roptS\").html()) - 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      : "</td>")
+                   + "<td class='ratingtext'>"
+                   + (typeof aa[3] != 'undefined' ? 
+                      "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
+                      + "onclick='$(\"#4roptS\").html(parseInt($(\"#4roptS\").html()) + 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "<span id='4roptS'>" + (typeof aa[3].split('~')[1] != 'undefined' ? aa[3].split('~')[1] : "0") + "</span>"
+                      + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
+                      + "onclick='$(\"#4roptS\").html(parseInt($(\"#4roptS\").html()) - 1);"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      : "</td>")
+                   + "</tr></table>"
+                   + "<hr style='border: 1px dashed grey;'>Notes?<label><input type='radio' name='notes" + val['quid'] + "' id='notes" + val['quid'] + "' value='true'"
                    + (val['notes'] == 'true' ? " checked='checked'" : "") 
                    + ">Yes</label><label>"
-                   + "<input type='radio' name='notes" + val['quid'] + "' value='false'"
+                   + "<input type='radio' name='notes" + val['quid'] + "' name='id" + val['quid'] + "' value='false'"
                    + (val['notes'] == 'false' ? " checked='checked'" : "") 
                    + ">No</label>"
                    + "<br><div id='notestextdiv" + val['quid'] + "'"
                    + (val['notes'] == 'false' ? " style='display:none;'" : "")
                    + ">Notes text:<br><input type='text' id='notestext" + val['quid'] + "' style='width:622px;' value='"
                    + (typeof val['notestext'] != 'undefined' ? val['notestext'] : '')
-                   + "'></div>Table View?<label><input type='radio' name='table" + val['quid'] + "' value='true'"
+                   + "'></div><hr style='border: 1px dashed grey;'>"
+                   + "Table View?<label><input type='radio' name='table" + val['quid'] + "' id='table" + val['quid'] + "' value='true'"
                    + (val['table'] == 'true' ? " checked='checked'" : "")
                    + ">Yes</label><label>"
-                   + "<input type='radio' name='table" + val['quid'] + "' value='false'"
+                   + "<input type='radio' name='table" + val['quid'] + "' id='table" + val['quid'] + "' value='false'"
                    + (val['table'] == 'false' ? " checked='checked'" : "") 
                    + ">No</label>";
               break;
@@ -279,15 +329,15 @@ wvmmsurvey.make = {
       }
     });
   },
-  refresh: function(quid) {
+  refresh: function(type,quid) {
     // Refresh the child window
     location.reload();
     // Scroll the child window
-    dtc.lib.scrollTo('#type'+quid);
+    dtc.lib.scrollTo('#'+type+quid);
     // Refresh the parent
     window.opener.location.reload();
     // Scrolling doesn't work on the parent because the objects do not have an ID
-    window.opener.dtc.lib.scrollTo('#type'+quid);
+    window.opener.dtc.lib.scrollTo('#'+type+quid);
   }
 }
 
@@ -360,7 +410,7 @@ wvmmsurvey.act = {
       }
     });
   },
-  change: function(oldquid,type,text,answers,notes,notestext,table) {
+  change: function(oldquid,type,text,answers,notes,notestext,table,rated) {
     // Changes questions
     $.ajax({
       url: "wvmmsurvey.php", 
@@ -373,7 +423,8 @@ wvmmsurvey.act = {
         answers: answers,
         notes: notes,
         notestext: notestext,
-        table: table
+        table: table,
+        rated: rated
       },
       cache: false,
       async: false,
@@ -382,13 +433,11 @@ wvmmsurvey.act = {
         if (r == '0') {
           // success
         } else {
-          // failed
+          alert("Failed to update question!");
         }
-  // Need to get quid or something here!!
-        // wvmmsurvey.make.refresh();
       },
       error: function() {
-        alert("failed error");
+        alert("Failed to update question!");
       }
     });
   },
@@ -401,18 +450,21 @@ wvmmsurvey.act = {
     var type = $('#type' + oldquid).val();
     var notes = 'false';
     var table = 'false';
+    var rated = 'false';
     if (type == 'radio') {
       var text = $('#desc' + oldquid).val();
       // Create answers
       var answers = '';
+      rated = $('input:radio[name=rated' + oldquid + ']:checked').val();
       for (var n=1;n<5;n++) {
-        answers += $('#' + n + 'ropt' + oldquid).val() != '' ? $('#' + n + 'ropt' + oldquid).val() + ',' : '';
+        var t = rated == 'true' ? '~' + $('#'+n+'roptS').html() + ',' : ',';
+        answers += $('#'+n+'ropt'+oldquid).val() != '' ? $('#'+n+'ropt'+oldquid).val() + t : '';
       }
       answers = answers.substring(0, answers.length - 1);
       notes = $('input:radio[name=notes' + oldquid + ']:checked').val();
       var notestext = $('#notestext' + oldquid).val();
       table = $('input:radio[name=table' + oldquid + ']:checked').val();
-      wvmmsurvey.act.change(oldquid,type,text,answers,notes,notestext,table); 
+      wvmmsurvey.act.change(oldquid,type,text,answers,notes,notestext,table,rated); 
     } else {
       var text = $('#desc' + oldquid).val();
       wvmmsurvey.act.change(oldquid,type,text,null,notes,null,table); 
@@ -431,7 +483,8 @@ wvmmsurvey.act = {
       async: false,
       dataType: 'json',
       success: function(r) {
-        wvmmsurvey.make.refresh(quid);
+// NEED TO BE MORE DYNAMIC HERE, IT'S NOT ALWAYS A RADIO!!
+        wvmmsurvey.make.refresh('radio',quid);
       },
       error: function(a,b,c) {
         alert(a+","+b+","+c);
