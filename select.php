@@ -15,7 +15,6 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        $('#saveStatus').css('display', 'none');
         wvmmsurvey.make.select();
         $('#surveyList').change(function() { window.location.href = "edit.php?suid=" + $(this).val(); });
         // Swapping CSS buttons for images in browsers that do not support advanced features
@@ -27,7 +26,11 @@
   </head>
   <body class="body">
     <div>
-      <?php include 'header.html'; ?>
+      <div class="header">
+        <div class="headerleft"><img id="saveStatus" src="" style="display: none;"></img></div>
+        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+        <div class="headerright"><img id="printButton" src="" style="display: none;"></img></div>
+      </div>      
       <div class="survey-heading">Select Survey</div>
       <hr>
       <p class="survey-question">Select the survey below, by the SAP # and the date &amp; time of visit. Type the SAP # to filter by store.</p>

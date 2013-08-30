@@ -8,12 +8,12 @@
 	left: 0px;
 	height: 45px;
 	overflow: hidden;
-	background-color: #545050;
+	background-color: #fff;
 	width: 100%;
 	font-size: 9px;
 	text-align: center;
 	font-family: arial;
-	color: white;
+	color: #000;
 }
 .headerleft {
 	float: left;
@@ -34,7 +34,6 @@
 	left: 0px;
 	overflow-x: hidden;
 	overflow-y: scroll;
-	background-color: #fafafa;
 	width: 100%;
 	padding-top: 50px;
 }
@@ -98,6 +97,7 @@ td.survey-question {
 	width: 350px;
 	height: 80px;
 	padding-left: 10px;
+	font-weight: bold;
 }
 tr.oddrow {
 	background-color: #cdcdcd;
@@ -113,3 +113,4 @@ a.row-controls {
  	text-align: right;
  	width: 25%;
  }
+ :checked + span { font-weight: bold; }

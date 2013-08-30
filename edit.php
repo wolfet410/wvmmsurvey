@@ -21,18 +21,21 @@
         wvmmsurvey.make.questions(<?php echo $_GET['suid']; ?>);
         var altText = "Last Saved: " + $('#modifiedDate').text();
         $('#saveStatus').attr({'src':"/img/saved.png",'alt':altText,'title':altText});
-        $('#saveStatus').css('display', 'block');
+        var radios = [];
         $(document).find(':input').each(function() {
           switch(this.type) {
             case 'textarea':
-              $('textarea#'+this.id).change (function () { 
+              $('textarea#'+this.id).change(function () { 
                 wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'textarea',$('textarea#'+this.id).val(),<?php echo $_GET['suid']; ?>); 
               });
               break;
             case 'radio':
-              $('input:radio[name='+this.id+']').click(function() { 
-                wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'radio',$('input:radio[name='+this.id+']:checked').val(),<?php echo $_GET['suid']; ?>); 
-              });
+              if (dtc.lib.findStrInArray(this.id,radios) == -1) {
+                $('input:radio[name='+this.id+']').click(function() {
+                  wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'radio',$('input:radio[name='+this.id+']:checked').val(),<?php echo $_GET['suid']; ?>); 
+                });
+                radios.push(this.id);
+              }
               break;
           }
         });
@@ -40,12 +43,21 @@
         (!$.support.opacity) && $('.btnimg').css('display','block');
         (!$.support.opacity) && $('.btntext').css('display','none');
         (!$.support.opacity) && $('a').removeClass('large button wvorange');
+        // Print button
+        var popupOptions = 'height=600,width=800,directories=no,location=no,menubar=no,status=no,'
+                 + 'titlebar=no,toolbar=no,resizable=yes,scrollbars=yes';
+        $('#print').click(function () { window.open('print.php?suid=1','_blank',popupOptions); });
+
       });
     </script>
   </head>
   <body class="body">
     <div>
-      <?php include 'header.html'; ?>
+      <div class="header">
+        <div class="headerleft"><img id="saveStatus" src=""></img></div>
+        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+        <div class="headerright"><a href="javascript:;" id="print"><img id="printButton" src="/img/print.png" alt="Print Survey" title="Print Survey" border=0></img></a></div>
+      </div>
       <div id="staticContent">
         <div class="survey-heading">Survey Information</div>
         <hr>

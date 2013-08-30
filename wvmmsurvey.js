@@ -3,45 +3,47 @@
 var wvmmsurvey = window.wvmmsurvey || {};
 
 wvmmsurvey.make = {
-	create: function(url) {
-		// Builds the create survey page
-		// url points to CSV file created from WV phone list via "save as .csv (MS-DOS)"
-		// with no other changes
-		$.ajax({
-			url: url,
-			type: 'GET',
-			cache: false,
-			async: false,
-			success: function(response) { 
-				var arr = $.csv.toObjects(response);
-				// Sort adapted from http://stackoverflow.com/a/5503971/1779382
-				arr.sort(function(a, b){
-					// Number padding adapted from http://stackoverflow.com/a/4258793/1779382
-					var a1 = (new Array(5 + 1 - a['SAP#'].toString().length)).join('0') + a['SAP#'];
-			    var b1 = (new Array(5 + 1 - b['SAP#'].toString().length)).join('0') + b['SAP#'];
-			    if(a1 == b1) return 0;
-			    return a1 > b1 ? 1 : -1;
-				});
-				var html = '<select id="store" name="store" class="chzn-select survey-textarea" data-placeholder="Select a store...">';
-				html += '<option value=""></option>';
-				$.each(arr, function(k,v){
-					if (v['SAP#'] !== '') {
-						 html += '<option value="' + v['SAP#'] + '">' + v['SAP#'] + ' - '
-							+ v['Store\nName'] + ' (' + v['Market'] + ')</option>';
-					} 
-				});
-				html += '</select>';
-        $('#storeVisited').empty();
-        $(html).appendTo('#storeVisited');
-				$(".chzn-select").chosen();
-				AnyTime.picker("visitDate",
-					{ format: "%W, %M %d, %z", firstDOW: 1 } 
-				);
-				$("#visitTime").AnyTime_picker({
-					format: "%h:%i %p", labelTitle: "Hour",
-					labelHour: "Hour", labelMinute: "Minute"
-				});
-			}
+	create: function() {
+    alert('<?php echo "from php"; ?>');
+
+// Need to create arr using http://api.jquery.com/jQuery.parseJSON/ and data from:
+    // ?php 
+    //   session_start();
+    //   require "/var/www/lib/php/library.php";
+    //   fnErrorLog("Select admin:".$_SESSION['admin']);
+    //   fnErrorLog("Select stores:".$_SESSION['stores']);
+    // ?
+  //   var arr = $.parseJSON('<?php echo $_SESSION["stores"]; ?>');
+		// arr.sort(function(a, b) {
+		// 	// Number padding adapted from http://stackoverflow.com/a/4258793/1779382
+		// 	var a1 = (new Array(5 + 1 - a['Title'].toString().length)).join('0') + a['Title'];
+	 //    var b1 = (new Array(5 + 1 - b['Title'].toString().length)).join('0') + b['Title'];
+	 //    if(a1 == b1) return 0;
+	 //    return a1 > b1 ? 1 : -1;
+		// });
+		// var html = '<select id="store" name="store" class="chzn-select survey-textarea" data-placeholder="Select a store...">';
+var html = '';
+html += '<div>why arent i here2?';
+alert('<?php echo "session:".$_SESSION["stores"]; ?>');
+html += '<?php echo "session:".$_SESSION["stores"]; ?>';
+html += '</div>';
+  //   html += '<option value=""></option>';
+		// $.each(arr, function(k,v){
+		// 	if (v['Title'] !== '') {
+		// 		 html += '<option value="' + v['Title'] + '">' + v['Title'] + ' - '
+		// 			+ v['Description'] + ' (' + v['Market'] + ')</option>';
+		// 	} 
+		// });
+		// html += '</select>';
+    $('#storeVisited').empty();
+    $(html).appendTo('#storeVisited');
+		$(".chzn-select").chosen();
+		AnyTime.picker("visitDate",
+			{ format: "%W, %M %d, %z", firstDOW: 1 } 
+		);
+		$("#visitTime").AnyTime_picker({
+			format: "%h:%i %p", labelTitle: "Hour",
+			labelHour: "Hour", labelMinute: "Minute"
 		});
 	},
   select: function() {
@@ -177,12 +179,134 @@ wvmmsurvey.make = {
         async: false,
         dataType: 'json',
         success: function(r) {
-          if (r) {
+          if (r != 0) {
             (type == 'textarea') && $('textarea#'+id).val(r[0]['textarea']);
             (type == 'radio') && $('[name='+id+'][value="'+r[0]['radio']+'"]').prop('checked',true);
           }
         }
       });
+    });
+  },
+  print: function(suid) {
+    // Builds dynamic survey content div using Questions table
+    var html = '';
+    // Show all questions in DOM
+    $.ajax({
+      url: "wvmmsurvey.php", 
+      type: 'POST',
+      data: { 
+        todo: "makeSurveyQuestions",
+        suid: suid
+      },
+      cache: false,
+      async: false,
+      dataType: 'json',
+      success: function(aq) {
+        var qnum = 0;
+        $.each(aq, function(key, val) {
+          switch(val['type']) {
+            case 'heading':
+              html += '<br><div class="survey-heading">' + val['text'] + '</div>';
+              html += '<hr>';
+              break;
+            case 'radio':
+              qnum++;
+              html += '<br><br><div class="survey-question';
+              html += val['table'] == 'true' ? '-table' : '';
+              html += '">' + qnum + ') ' + val['text'];
+              html += val['rated'] == 'true' ? '<br><em>Rating: <span id="rating'+val['quid']+'"></span></em>' : '';
+              html += '</div>';
+              var ans = val['answers'].split(",");
+              $.each(ans, function(k,v) {
+                html += '<label class="survey-radio';
+                html += val['table'] == 'true' ? '-table' : '';
+                html += '"><input type="radio" name="radio' + val['quid'] + '" '
+                     + 'id="radio' + val['quid'] + '" value="' + v + '"><span>' + v.split('~')[0] 
+                     + '</span></label>';                
+              });
+              if (val['notes'] == "true") {
+                html += '<p class="survey-question" style="text-indent: 0px; padding-left: ';
+                html += val['table'] == 'true' ? '240' : '10';
+                html += 'px;">' + val['notestext'] + '<br><span class="survey-textarea" id="notes'
+                     + val['quid'] + '" ></span></p>';
+              } else {
+                html += val['table'] == 'true' ? '' : '<br><br>';
+              }
+              break;
+            case 'textbox':
+              qnum++;
+              html += '<p class="survey-question">';
+              html += qnum + ') ' + val['text'] + '<br><span id="text' 
+                   + val['quid'] + '" class="survey-textarea"></span></p>';
+              break;
+          }
+        });
+        $('#dynamicContent').empty();
+        $(html).appendTo('#dynamicContent');
+      }
+    });
+    // Populate each question with the latest answer
+    $(document).find('span.survey-textarea').each(function() {
+      var id = this.id;
+      $.ajax({
+        url: "wvmmsurvey.php", 
+        type: 'POST',
+        data: { 
+          todo: "makeGetAnswers",
+          type: "textarea",
+          quid: this.id.match(/[0-9]+/g).toString(),
+          suid: suid
+        },
+        cache: false,
+        async: false,
+        dataType: 'json',
+        success: function(r) {
+          if ( r != 0) {
+            $('#'+id).html(r[0]['textarea']);
+          }
+        },
+        error: function(a,b,c) { alert(a,b,c); }
+      });
+    });
+    $(document).find(':radio').each(function() {
+      var id = this.id;
+      $.ajax({
+        url: "wvmmsurvey.php", 
+        type: 'POST',
+        data: { 
+          todo: "makeGetAnswers",
+          type: "radio",
+          quid: this.id.match(/[0-9]+/g).toString(),
+          suid: suid
+        },
+        cache: false,
+        async: false,
+        dataType: 'json',
+        success: function(r) {
+          if ( r != 0) {
+            $('[name='+id+'][value="'+r[0]['radio']+'"]').prop('checked',true);
+            $('#rating'+id.match(/[0-9]+/g).toString()).html(r[0]['radio'].split('~')[1]);
+          }
+        },
+        error: function(a,b,c) { alert(a,b,c); }
+      });
+    });
+    // Update overall rating
+    $.ajax({
+      url: "wvmmsurvey.php", 
+      type: 'POST',
+      data: { 
+        todo: "printRating",
+        suid: suid
+      },
+      cache: false,
+      async: false,
+      success: function(r) {
+        html = '<span style="font-weight:bold;">Overall Rating: '+(r*100).toFixed(0)+'%</span>';
+        $('#ratingDiv').empty();
+        $(html).appendTo('#ratingDiv');
+      },
+      error: function(a,b,c) { alert(a,b,c); }
     });
   },
   popup: function() {
@@ -328,6 +452,22 @@ wvmmsurvey.make = {
         $(html).appendTo('#popupContent');
       }
     });
+  },
+  useremail: function () {
+    // Returns user e-mail address
+
+
+// DUMB ASS!!!
+
+
+
+
+
+
+
+
+
+
   },
   refresh: function(type,quid) {
     // Refresh the child window
@@ -503,5 +643,69 @@ wvmmsurvey.report = {
     } else {
       $('#formCsvBySurvey').submit();
     }
+  }
+}
+
+wvmmsurvey.sharepoint = {
+  isAdmin: function() {
+    // Returns e-mail address,(true or false) if logged on user is a member of the SandBox Owners group
+    var owner = 'false';
+    var user = $().SPServices.SPGetCurrentUser();
+    var email = $().SPServices.SPGetCurrentUser({fieldName: "EMail", debug: false});
+    $().SPServices({
+      operation: 'GetGroupCollectionFromUser',
+      userLoginName: user,  
+      async: false,  
+      completefunc: function(xData, Status) { 
+        $(xData.responseXML).find('Group').each(function() {
+          if ($(this).attr('Name') == 'SandBox Owners') { owner = 'true'; }
+        });
+      }
+    });
+    return email + "," + owner;
+  },
+  stores: function() {
+    // Returns a JSON array of the stores listed in the Stores SharePoint list
+    // Use JSON.stringify(wvmmsurvey.sharepoint.stores()) to send this data to PHP
+    var json = [];
+    var fields = "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Description' />"
+               + "<FieldRef Name='Market' /><FieldRef Name='Region' /></ViewFields>";
+    $().SPServices({
+        operation: "GetListItems",
+        async: false,
+        listName: "Stores",
+        CAMLViewFields: fields,
+        completefunc: function (xData, Status) {
+          var i = 0;
+          json = $(xData.responseXML).SPFilterNode("z:row").SPXmlToJson({
+            mapping: {
+              ows_Title: {mappedName: 'Title', objectType: 'Text'},
+              ows_Description: {mappedName: 'Description', objectType: 'Text'},
+              ows_Market: {mappedName: 'Market', objectType: 'Text'},
+              ows_Region: {mappedName: 'Region', objectType: 'Text'}
+            },
+            includeAllAttrs: false,
+            removeOws: true
+          });
+        }
+    });
+    return json;
+  },
+  pass: function(inp) {
+    // Pass information to CEWP iFrame
+    // Adapted from: http://stackoverflow.com/a/9815335/1779382
+    var arr = inp.split(",");
+    var path = "http://wvmmsurvey.buzzspace.datatechcafe.com/post.php";
+    var params = {'email': arr[0].toLowerCase(), 'admin': arr[1]}
+    var form = $(document.createElement('form'))
+        .attr({'method': 'post', 'action': path, 'target': 'iframe'});
+    $.each(params, function(key,value){
+      $.each(value instanceof Array ? value : [value], function(i,val){
+        $(document.createElement('input'))
+          .attr({'type': 'hidden', 'name': key, 'value': val})
+          .appendTo(form);
+      }); 
+    }); 
+    form.appendTo(document.body).submit(); 
   }
 }

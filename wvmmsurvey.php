@@ -73,12 +73,13 @@ function makeGetAnswers() {
   $suid = safe($_POST['suid']);
   $quid = safe($_POST['quid']);
   $type = safe($_POST['type']);
-  $q = "SELECT * FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$quid' AND suid = '$suid' AND $type != '') AND quid = '$quid' LIMIT 1";
+  $q = "SELECT * FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$quid' AND suid = '$suid' AND $type != '') AND "
+     . "quid = '$quid' AND suid = '$suid' AND $type != '' LIMIT 1";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting answers: " . mysql_error());
   while ($a = mysql_fetch_assoc($r)) {
     $s[] = $a;
   }
-  if (isset($s)) echo json_encode($s);
+  if (isset($s)) { echo json_encode($s); } else { echo 0; }
 }
 
 function actWriteResults() {
@@ -208,7 +209,7 @@ function updateOutput() {
       switch ($type) {
         case "textbox":
           $qt = "SELECT textarea,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
-              . "AND suid = '".$a['suid']."') AND quid = '$v' LIMIT 1";
+              . "AND suid = '".$a['suid']."') AND quid = '$v' AND suid = '".$a['suid']."' LIMIT 1";
           $rt = mysql_query($qt) or fnErrorDie("WVMMSURVEY: updateOutput problems getting textarea");
           if (mysql_num_rows($rt) > 0) {
             $textarea = mysql_result($rt,0);
@@ -230,15 +231,29 @@ function updateOutput() {
             $response = "0000-00-00 00:00:00";
           }
           $qr = "SELECT radio,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
-              . "AND suid = '".$a['suid']."' AND radio != '') AND quid = '$v' AND suid = '".$a['suid']."'  AND radio != '' LIMIT 1";
+              . "AND suid = '".$a['suid']."' AND radio != '') AND quid = '$v' AND suid = '".$a['suid']."' AND radio != '' LIMIT 1";
           $rr = mysql_query($qr) or fnErrorDie("WVMMSURVEY: updateOutput problems getting radio");
           if (mysql_num_rows($rr) > 0) {
-            $radio = mysql_result($rr,0);
+            $rarr = explode("~",mysql_result($rr,0));
+            $radio = $rarr[0];
+            if (isset($rarr[1])) { $rating = $rarr[1]; } else { $rating = ''; }
             $response = ($response > mysql_result($rr,0,1)) ? $response : mysql_result($rr,0,1);
           }
+          // Get maximum rating value to determine averages
+          $q = "SELECT answers FROM Questions WHERE quid = $v";
+          $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: updateOutput problems getting max");
+          if (mysql_num_rows($r) > 0) {
+            $ansarr = explode(",",mysql_result($r,0));
+            $max = 0;
+            foreach($ansarr as $maxv) {
+              $maxa = explode("~",$maxv);
+              isset($maxa[1]) && $max = $maxa[1] > $max ? $maxa[1] : $max;
+            }
+            $max = $max == 0 ? '' : $max;
+          }
           if ($textarea != '' || $radio != '') {
-            $qu = "INSERT INTO  `Output` (`suid`,`quid`,`store`,`qtext`,`notestext`,`radio`,`textarea`,`response`) "
-                . "VALUES ('".$a['suid']."','$v','".$a['store']."','$qtext','$notestext','$radio','$textarea','$response')";
+            $qu = "INSERT INTO  `Output` (`suid`,`quid`,`rating`,`maxrating`,`store`,`qtext`,`notestext`,`radio`,`textarea`,`response`) "
+                . "VALUES ('".$a['suid']."','$v','".$rating."','".$max."','".$a['store']."','$qtext','$notestext','".$radio."','$textarea','$response')";
             $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
           }
           break;
@@ -250,13 +265,17 @@ function updateOutput() {
 
 function csvBySurvey() {
   // CSV generation adapted from http://stackoverflow.com/a/12333533/1779382
-  $ans = array(array('Store','Question Text','Notes Text','Button Response','Text Response','Respond Date/Time'));
+  $ans = array(array('Store','Rating','Question Text','Button Response','Notes Text','Text Response','Respond Date/Time'));
   $suid = safe($_GET['surveyList']);
-  $q = "SELECT store,qtext,notestext,radio,textarea,response FROM Output WHERE suid = $suid";
+  $q = "SELECT store,rating,maxrating,qtext,radio,notestext,textarea,response FROM Output WHERE suid = $suid";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data");
   while ($a = mysql_fetch_assoc($r)) {
-    $ans[] = array($a['store'],$a['qtext'],$a['notestext'],$a['radio'],$a['textarea'],$a['response']);
+    $ans[] = array($a['store'],$a['rating'],$a['qtext'],$a['notestext'],$a['radio'],$a['textarea'],$a['response']);
+    $ratingTotal += $a['rating'];
+    $ratingMaximum += $a['maxrating'];
   }
+  $ratingAverage = $ratingTotal / $ratingMaximum;
+  $ans[] = array("Average Rating: ",intval($ratingAverage*100)."%");
 
   header("Pragma: public");
   header("Expires: 0");
@@ -270,6 +289,22 @@ function csvBySurvey() {
       fputcsv($fp, $fields);
   }
   fclose($fp);
+}
+
+function printRating() {
+  // Has to rebuild Output table, this is not ideal
+  updateOutput();
+  $suid = safe($_POST['suid']);
+  // Get's and sends average rating back
+  $q = "SELECT rating,maxrating FROM Output WHERE suid = $suid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data");
+  while ($a = mysql_fetch_assoc($r)) {
+    $ans[] = array($a['store'],$a['rating'],$a['qtext'],$a['notestext'],$a['radio'],$a['textarea'],$a['response']);
+    $ratingTotal += $a['rating'];
+    $ratingMaximum += $a['maxrating'];
+  }
+  $ratingAverage = $ratingTotal / $ratingMaximum;
+  echo $ratingAverage;
 }
 
 ?>

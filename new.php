@@ -18,9 +18,7 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        $('#saveStatus').css('display', 'none');
-        // CSV copy of the Wireless Vision phone list
-        wvmmsurvey.make.create("http://wvmmsurvey.buzzspace.datatechcafe.com/phonelist/2013 - Wireless Vision Phone Directory.csv");
+        wvmmsurvey.make.create();
         // Swapping CSS buttons for images in browsers that do not support advanced features
         (!$.support.opacity) && $('.btnimg').css('display','inline-block');
         (!$.support.opacity) && $('.btntext').css('display','none');
@@ -30,7 +28,9 @@
   </head>
   <body class="body">
     <div>
-      <?php include 'header.html'; ?>
+      <div class="header">
+        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+      </div>
       <div id="staticContent">
         <div class="survey-heading">Create New Survey</div>
         <hr>

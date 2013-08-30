@@ -12,11 +12,11 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        $('#saveStatus').css('display', 'none');
         var popupOptions = 'height=600,width=800,directories=no,location=no,menubar=no,status=no,'
                          + 'titlebar=no,toolbar=no,resizable=yes,scrollbars=yes';
         $('#changeSurvey').click(function () { window.open('popup.php','_blank',popupOptions); });
         wvmmsurvey.make.questions(0);
+        $(':input').prop('disabled', true);
         // Swapping CSS buttons for images in browsers that do not support advanced features
         (!$.support.opacity) && $('.btnimg').css('display','block');
         (!$.support.opacity) && $('.btntext').css('display','none');
@@ -26,7 +26,9 @@
   </head>
   <body class="body">
     <div>
-      <?php include 'header.html'; ?>
+      <div class="header">
+        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+      </div>
       <div id="staticContent">
         <div class="survey-heading">Change Survey</div>
         <hr>

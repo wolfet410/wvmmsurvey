@@ -13,28 +13,31 @@
     <script>
       $(document).ready(function() {
         wvmmsurvey.make.popup();
+        var radios = [];
         $(document).find(':input').each(function() {
           switch(this.type) {
             case 'select-one':
             case 'text':
               $('#'+this.id).change (function () { 
                 wvmmsurvey.act.popupWork(this.id);
-                wvmmsurvey.make.refresh(this.id.match(/[0-9]+/g).toString());
+                wvmmsurvey.make.refresh('desc',this.id.match(/[0-9]+/g).toString());
               });              
               break;
             case 'radio':
-              $('input:radio[name='+this.name+']').click(function() {
-                if (this.name.indexOf('notes') != -1) {
-                  console.warn($('input:radio[name=' + this.name + ']:checked').val());
-                  if ($('input:radio[name=' + this.name + ']:checked').val() == 'true') {
-                    $('#notestextdiv' + this.name.match(/[0-9]+/g).toString()).show();
-                  } else {
-                    $('#notestextdiv' + this.name.match(/[0-9]+/g).toString()).hide();
+              if (dtc.lib.findStrInArray(this.name,radios) == -1) {
+                $('input:radio[name='+this.name+']').click(function() {
+                  if (this.name.indexOf('notes') != -1) {
+                    if ($('input:radio[name=' + this.name + ']:checked').val() == 'true') {
+                      $('#notestextdiv' + this.name.match(/[0-9]+/g).toString()).show();
+                    } else {
+                      $('#notestextdiv' + this.name.match(/[0-9]+/g).toString()).hide();
+                    }
                   }
-                }
-                wvmmsurvey.act.popupWork(this.name);
-                wvmmsurvey.make.refresh(this.id.match(/[0-9]+/g).toString());
-              });
+                  wvmmsurvey.act.popupWork(this.name);
+                  wvmmsurvey.make.refresh('desc',this.name.match(/[0-9]+/g).toString());
+                });
+                radios.push(this.name);
+              }
               break;
           }
         });
@@ -43,7 +46,10 @@
   </head>
   <body class="body">
     <div>
-      <?php include 'header.html'; ?>
+      <div class="header">
+        <div class="headerleft"><img id="saveStatus" src="" style="display: none;"></img></div>
+        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+      </div>
       <div id="staticContent">
         <div class="survey-heading">Survey Information</div>
         <hr>

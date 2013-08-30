@@ -18,7 +18,6 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        $('#saveStatus').css('display', 'none');
         // Update output table
         $.ajax({
           url: "wvmmsurvey.php", 
@@ -46,7 +45,11 @@
   </head>
   <body class="body">
     <div>
-      <?php include 'header.html'; ?>
+      <div class="header">
+        <div class="headerleft"><img id="saveStatus" src="" style="display: none;"></img></div>
+        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+        <div class="headerright"><img id="printButton" src="" style="display: none;"></img></div>
+      </div>
       <div class="survey-heading">Reports</div>
       <hr>
       <p class="report-text">Select the appropriate Run Report button below</p>
