@@ -14,7 +14,10 @@
     <title>Wireless Vision Market Manager Survey</title>
     <link rel="stylesheet" href="../lib/css/buttons.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
+    <link rel="stylesheet" href="../lib/css/messi.css">
     <script src="../lib/js/jquery-1.8.2.js"></script>
+    <script src="../lib/js/jquery.SPServices-2013.01.min.js"></script>
+    <script src="../lib/js/messi.min.js"></script>
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
@@ -37,7 +40,6 @@
       <div id="admin" style="display:none;">
         <p class="center"><a href="change.php" class="large button wvorange"><img src="img/changesurveyquestions.jpg" class="btnimg" style="display:none;"><span class="btntext">Change Survey Questions</span></a></p>
         <p class="center"><a href="report.php" class="large button wvorange"><img src="img/reports.jpg" class="btnimg" style="display:none;"><span class="btntext">Reports</span></a></p>
-        <p class="center"><a href="sync.php" class="large button wvorange"><img src="img/sync.png" class="btnimg" style="display:none;"><span class="btntext">Sync</span></a></p>
       </div>
     </div>
   </body>

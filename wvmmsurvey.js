@@ -691,14 +691,22 @@ wvmmsurvey.sharepoint = {
     });
     return json;
   },
-  pass: function(inp) {
+  pass: function(type,path,inp) {
     // Pass information to CEWP iFrame
     // Adapted from: http://stackoverflow.com/a/9815335/1779382
-    var arr = inp.split(",");
-    var path = "http://wvmmsurvey.buzzspace.datatechcafe.com/post.php";
-    var params = {'email': arr[0].toLowerCase(), 'admin': arr[1]}
+    switch(type) {
+      case 'auth':
+        var arr = inp.split(",");
+        var params = {'email': arr[0].toLowerCase(), 'admin': arr[1]}
+        var target = 'iframe';
+        break;
+      case 'stores':
+        var params = {'stores': inp}
+        var target = '_blank';
+        break;
+    }
     var form = $(document.createElement('form'))
-        .attr({'method': 'post', 'action': path, 'target': 'iframe'});
+        .attr({'method': 'post', 'action': path, 'target': target});
     $.each(params, function(key,value){
       $.each(value instanceof Array ? value : [value], function(i,val){
         $(document.createElement('input'))

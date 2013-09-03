@@ -33,7 +33,7 @@
 	top: 50px;
 	left: 0px;
 	overflow-x: hidden;
-	overflow-y: scroll;
+	overflow-y: auto;
 	background-color: #fafafa;
 	width: 100%;
 	padding-top: 50px;

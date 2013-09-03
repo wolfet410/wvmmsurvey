@@ -11,7 +11,7 @@
     <?php echo '<script src="http://wvmmsurvey.buzzspace.datatechcafe.com/wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.sharepoint.pass(wvmmsurvey.sharepoint.isAdmin());
+        wvmmsurvey.sharepoint.pass('auth','http://wvmmsurvey.buzzspace.datatechcafe.com/post.php',wvmmsurvey.sharepoint.isAdmin());
       });
     </script>
   </head>
