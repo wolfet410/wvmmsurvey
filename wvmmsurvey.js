@@ -74,35 +74,52 @@ html += '</div>';
   },
   edit: function(suid) {
     // Gets and displays the sap & time stamp info for the survey being edited
+alert('yellow');
     var storeHtml = '';
     var createdHtml = '';
     var modifiedHtml = '';
-    $.ajax({
-      url: "wvmmsurvey.php",
-      type: 'POST',
-      data: { 
-        todo: "makeEditSurvey",
-        suid: suid
-      },
-      cache: false,
+    // $.ajax({
+    //   url: "wvmmsurvey.php",
+    //   type: 'POST',
+    //   data: { 
+    //     todo: "makeEditSurvey",
+    //     suid: suid
+    //   },
+    //   cache: false,
+    //   async: false,
+    //   dataType: 'json',
+    //   success: function(r) {
+    //     $.each(r, function(key, val) {
+    //       // Internet Explorer has problems with - in dates, see: 
+    //       // http://stackoverflow.com/questions/8098963/javascript-datedatestring-returns-nan-on-specific-server-and-browser
+    //       var dc = new Date(val['userCreated'].replace(/-/g,"/"));
+    //       var dm = new Date(val['systemLastModified'].replace(/-/g,"/"));
+    //       storeHtml = '<div>SAP Number: ' + val['store'] + '</div>';
+    //       createdHtml = '<div>' + dtc.lib.formatDate(dc) + '</div>';
+    //       modifiedHtml = '<div id="modifiedDate">' + dtc.lib.formatDate(dm) + '</div>';
+    //       $('#storeVisited').empty();
+    //       $('#createdDate').empty();
+    //       $('#modifiedDate').empty();
+    //       $(storeHtml).appendTo('#storeVisited');
+    //       $(createdHtml).appendTo('#createdDate');
+    //       $(modifiedHtml).appendTo('#modifiedDate');
+    //     });
+    //   }
+    // });
+    // var fields = "<ViewFields><FieldRef Name='store' /></ViewFields>";
+    var query = "<Query><Where><Eq><FieldRef Name='Title'/><Value Type='Text'>"+suid+"</Value></Eq></Where></Query>";
+    $().SPServices({
+      operation: "GetListItems",
       async: false,
-      dataType: 'json',
-      success: function(r) {
-        $.each(r, function(key, val) {
-          // Internet Explorer has problems with - in dates, see: 
-          // http://stackoverflow.com/questions/8098963/javascript-datedatestring-returns-nan-on-specific-server-and-browser
-          var dc = new Date(val['userCreated'].replace(/-/g,"/"));
-          var dm = new Date(val['systemLastModified'].replace(/-/g,"/"));
-          storeHtml = '<div>SAP Number: ' + val['store'] + '</div>';
-          createdHtml = '<div>' + dtc.lib.formatDate(dc) + '</div>';
-          modifiedHtml = '<div id="modifiedDate">' + dtc.lib.formatDate(dm) + '</div>';
-          $('#storeVisited').empty();
-          $('#createdDate').empty();
-          $('#modifiedDate').empty();
-          $(storeHtml).appendTo('#storeVisited');
-          $(createdHtml).appendTo('#createdDate');
-          $(modifiedHtml).appendTo('#modifiedDate');
-        });
+      listName: "Surveys",
+      // CAMLViewFields: fields,
+      CAMLQuery: query,
+      completefunc: function (xData, Status) {
+        $(xData.responseXML).SPFilterNode("z:row").each(function () {
+          storeHtml = '<div>SAP Number: ' + $(this).attr("ows_store") + '</div>';
+          alert("T:"+$(this).attr("ows_Title"));
+          alert("S:"+$(this).attr("ows_store"));
+        })
       }
     });
   },
