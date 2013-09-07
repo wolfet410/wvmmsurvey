@@ -42,11 +42,15 @@
         <table style="padding-left: 10px;">
           <tr>
             <td class="survey-question" style="padding-left: 0px;">SAP Number: nnn</div></td>
+            <td class="survey-question">Surveyor:</td>
             <td class="survey-question">Visit Date:</td>
             <td class="survey-question">Last Saved:</td>
           </tr>
           <tr>
             <td></td>
+            <td class="survey-question">
+              <div>user@wirelessvision.com</div>
+            </td>
             <td class="survey-question">
               <div>mm/dd/yyyy hh:mm:ss</div>
             </td>

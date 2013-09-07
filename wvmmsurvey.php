@@ -18,6 +18,7 @@ if (isset($_GET['report'])) {
 function createSurvey() {
   // Creates survey record
   $store = safe($_POST['store']);
+  $email = $_SESSION['email'];
   $userCreated = safe($_POST['usercreated']);
 
   // Creates & stores a list of the current questions being asked are at this point in time
@@ -29,19 +30,25 @@ function createSurvey() {
   }
   $qList = rtrim($qList,",");
 
-  $q = "INSERT INTO Surveys (store,quids,userCreated) VALUES ('$store','$qList','$userCreated')";
+  $q = "INSERT INTO Surveys (email,store,quids,userCreated) VALUES ('$email','$store','$qList','$userCreated')";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Error 2 in createSurvey: " . mysql_error());
   echo mysql_insert_id();
 }
 
+function makeCreateSurvey() {
+  // Gets list of stores
+  echo fnQueryJSON("*","Stores");
+}
+
 function makeSelectSurvey() {
   // Gets list of surveys to be selected
-  fnQueryJSON("suid,store,userCreated","Surveys","","store");
+  $a = $_SESSION['admin'] == 'true' ? '' : 'email = "' . $_SESSION['email'] . '"';
+  echo fnQueryJSON("Surveys.suid,Surveys.store,Surveys.userCreated,Stores.desc,Stores.market,Stores.region","Surveys INNER JOIN Stores ON Surveys.store = Stores.sap",$a,"store");
 }
 
 function makeEditSurvey() {
   // Gets static info for survey being edited
-  fnQueryJSON("suid,store,userCreated,systemLastModified","Surveys","suid=".safe($_POST['suid']));
+  echo fnQueryJSON("suid,email,store,userCreated,systemLastModified","Surveys","suid=".safe($_POST['suid']));
 }
 
 function makeSurveyQuestions() {
@@ -49,7 +56,7 @@ function makeSurveyQuestions() {
   $suid = safe($_POST['suid']);
   if ($suid == '0') {
     // $suid is 0 when we are changing the survey questions
-    fnQueryJSON("*","Questions","active='true'","sort");
+    echo fnQueryJSON("*","Questions","active='true'","sort");
   } else {
     // Otherwise $suid is set to the survey uid that we are editing
     $q = "SELECT quids FROM Surveys WHERE suid = $suid";

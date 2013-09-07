@@ -46,7 +46,7 @@
         // Print button
         var popupOptions = 'height=600,width=800,directories=no,location=no,menubar=no,status=no,'
                  + 'titlebar=no,toolbar=no,resizable=yes,scrollbars=yes';
-        $('#print').click(function () { window.open('print.php?suid=1','_blank',popupOptions); });
+        $('#print').click(function () { window.open('print.php?suid=<?php echo $_GET['suid']; ?>','_blank',popupOptions); });
 
       });
     </script>
@@ -64,11 +64,15 @@
         <table style="padding-left: 10px;">
           <tr>
             <td class="survey-question" style="padding-left: 0px;"><div id="storeVisited"><!-- Dynamically populated --></div></td>
+            <td class="survey-question">Surveyor:</td>
             <td class="survey-question">Visit Date:</td>
             <td class="survey-question">Last Saved:</td>
           </tr>
           <tr>
             <td></td>
+            <td class="survey-question">
+              <div id="surveyor"><!-- Dynamically populated --></div>
+            </td>
             <td class="survey-question">
               <div id="createdDate"><!-- Dynamically populated --></div>
             </td>

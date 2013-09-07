@@ -4,47 +4,45 @@ var wvmmsurvey = window.wvmmsurvey || {};
 
 wvmmsurvey.make = {
 	create: function() {
-    alert('<?php echo "from php"; ?>');
-
-// Need to create arr using http://api.jquery.com/jQuery.parseJSON/ and data from:
-    // ?php 
-    //   session_start();
-    //   require "/var/www/lib/php/library.php";
-    //   fnErrorLog("Select admin:".$_SESSION['admin']);
-    //   fnErrorLog("Select stores:".$_SESSION['stores']);
-    // ?
-  //   var arr = $.parseJSON('<?php echo $_SESSION["stores"]; ?>');
-		// arr.sort(function(a, b) {
-		// 	// Number padding adapted from http://stackoverflow.com/a/4258793/1779382
-		// 	var a1 = (new Array(5 + 1 - a['Title'].toString().length)).join('0') + a['Title'];
-	 //    var b1 = (new Array(5 + 1 - b['Title'].toString().length)).join('0') + b['Title'];
-	 //    if(a1 == b1) return 0;
-	 //    return a1 > b1 ? 1 : -1;
-		// });
-		// var html = '<select id="store" name="store" class="chzn-select survey-textarea" data-placeholder="Select a store...">';
-var html = '';
-html += '<div>why arent i here2?';
-alert('<?php echo "session:".$_SESSION["stores"]; ?>');
-html += '<?php echo "session:".$_SESSION["stores"]; ?>';
-html += '</div>';
-  //   html += '<option value=""></option>';
-		// $.each(arr, function(k,v){
-		// 	if (v['Title'] !== '') {
-		// 		 html += '<option value="' + v['Title'] + '">' + v['Title'] + ' - '
-		// 			+ v['Description'] + ' (' + v['Market'] + ')</option>';
-		// 	} 
-		// });
-		// html += '</select>';
-    $('#storeVisited').empty();
-    $(html).appendTo('#storeVisited');
-		$(".chzn-select").chosen();
-		AnyTime.picker("visitDate",
-			{ format: "%W, %M %d, %z", firstDOW: 1 } 
-		);
-		$("#visitTime").AnyTime_picker({
-			format: "%h:%i %p", labelTitle: "Hour",
-			labelHour: "Hour", labelMinute: "Minute"
-		});
+    // Builds lists of stores to select from
+    $.ajax({
+      url: "wvmmsurvey.php",
+      type: 'POST',
+      data: { 
+        todo: "makeCreateSurvey"
+      },
+      cache: false,
+      async: false,
+      dataType: 'json',
+      success: function(arr) {
+        arr.sort(function(a, b) {
+          // Number padding adapted from http://stackoverflow.com/a/4258793/1779382
+          var a1 = (new Array(5 + 1 - a['sap'].toString().length)).join('0') + a['sap'];
+          var b1 = (new Array(5 + 1 - b['sap'].toString().length)).join('0') + b['sap'];
+          if (a1 == b1) return 0;
+          return a1 > b1 ? 1 : -1;
+        });
+        var html = '<select id="store" name="store" class="chzn-select survey-textarea" data-placeholder="Select a store...">';
+        html += '<option value=""></option>';
+        $.each(arr, function(k,v){
+         if (v['sap'] !== '') {
+            html += '<option value="' + v['sap'] + '">' + v['sap'] + ' - '
+             + v['desc'] + ' (' + v['market'] + '/' + v['region'] + ')</option>';
+         } 
+        });
+        html += '</select>';
+        $('#storeVisited').empty();
+        $(html).appendTo('#storeVisited');
+        $(".chzn-select").chosen();
+        AnyTime.picker("visitDate",
+          { format: "%W, %M %d, %z", firstDOW: 1 } 
+        );
+        $("#visitTime").AnyTime_picker({
+          format: "%h:%i %p", labelTitle: "Hour",
+          labelHour: "Hour", labelMinute: "Minute"
+        });
+      }
+    });
 	},
   select: function() {
     // Builds and displays the list of existing surveys to select from
@@ -62,7 +60,7 @@ html += '</div>';
         html += '<option value=""></option>';
         $.each(arr, function(k,v){
           if (v['suid'] !== '') {
-             html += '<option value="' + v['suid'] + '">' + v['store'] + ' - ' + v['userCreated'];
+             html += '<option value="' + v['suid'] + '">' + v['store'] + ' - ' + v['desc'] + ' - ' + v['market'] + ' - ' + v['region'] + ' - ' + v['userCreated'];
           } 
         });
         html += '</select>';
@@ -75,6 +73,7 @@ html += '</div>';
   edit: function(suid) {
     // Gets and displays the sap & time stamp info for the survey being edited
     var storeHtml = '';
+    var surveyorHtml = '';
     var createdHtml = '';
     var modifiedHtml = '';
     $.ajax({
@@ -94,12 +93,15 @@ html += '</div>';
           var dc = new Date(val['userCreated'].replace(/-/g,"/"));
           var dm = new Date(val['systemLastModified'].replace(/-/g,"/"));
           storeHtml = '<div>SAP Number: ' + val['store'] + '</div>';
+          surveyorHtml = '<div>' + val['email'] + '</div>';
           createdHtml = '<div>' + dtc.lib.formatDate(dc) + '</div>';
           modifiedHtml = '<div id="modifiedDate">' + dtc.lib.formatDate(dm) + '</div>';
           $('#storeVisited').empty();
+          $('#surveyor').empty();
           $('#createdDate').empty();
           $('#modifiedDate').empty();
           $(storeHtml).appendTo('#storeVisited');
+          $(surveyorHtml).appendTo('#surveyor');
           $(createdHtml).appendTo('#createdDate');
           $(modifiedHtml).appendTo('#modifiedDate');
         });
