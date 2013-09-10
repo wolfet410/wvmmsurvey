@@ -60,7 +60,7 @@ wvmmsurvey.make = {
         html += '<option value=""></option>';
         $.each(arr, function(k,v){
           if (v['suid'] !== '') {
-             html += '<option value="' + v['suid'] + '">' + v['store'] + ' - ' + v['desc'] + ' - ' + v['market'] + ' - ' + v['region'] + ' - ' + v['userCreated'];
+             html += '<option value="' + v['suid'] + '">' + v['store'] + ' - ' + v['desc'] + ' - ' + v['market'] + ' - ' + v['region'] + ' - ' + v['userCreated'] + '</option>';
           } 
         });
         html += '</select>';
@@ -108,8 +108,9 @@ wvmmsurvey.make = {
       }
     });
   },
-  questions: function(suid) {
+  questions: function(muid,suid) {
     // Builds dynamic survey content div using Questions table
+    // muid creates questions, suid creates answers
     var html = '';
     // Show all questions in DOM
     $.ajax({
@@ -117,7 +118,7 @@ wvmmsurvey.make = {
       type: 'POST',
       data: { 
         todo: "makeSurveyQuestions",
-        suid: suid
+        muid: muid
       },
       cache: false,
       async: false,
@@ -164,29 +165,48 @@ wvmmsurvey.make = {
         $(html).appendTo('#dynamicContent');
       }
     });
-    // Populate each question with the latest answer
-    $(document).find(':input').each(function() {
-      var type = this.type;
-      var id = this.id;
-      $.ajax({
-        url: "wvmmsurvey.php", 
-        type: 'POST',
-        data: { 
-          todo: "makeGetAnswers",
-          type: type,
-          quid: this.id.match(/[0-9]+/g).toString(),
-          suid: suid
-        },
-        cache: false,
-        async: false,
-        dataType: 'json',
-        success: function(r) {
-          if (r != 0) {
-            (type == 'textarea') && $('textarea#'+id).val(r[0]['textarea']);
-            (type == 'radio') && $('[name='+id+'][value="'+r[0]['radio']+'"]').prop('checked',true);
+    // Populate each question with the latest answer, if suid exists
+    if (typeof suid !== 'undefined') {
+      $(document).find(':input').each(function() {
+        var type = this.type;
+        var id = this.id;
+        $.ajax({
+          url: "wvmmsurvey.php", 
+          type: 'POST',
+          data: { 
+            todo: "makeGetAnswers",
+            type: type,
+            quid: this.id.match(/[0-9]+/g).toString(),
+            suid: suid
+          },
+          cache: false,
+          async: false,
+          dataType: 'json',
+          success: function(r) {
+            if (r != 0) {
+              (type == 'textarea') && $('textarea#'+id).val(r[0]['textarea']);
+              (type == 'radio') && $('[name='+id+'][value="'+r[0]['radio']+'"]').prop('checked',true);
+            }
           }
-        }
+        });
       });
+    }
+    // Update the name of the survey
+    html = '';
+    $.ajax({
+      url: "wvmmsurvey.php", 
+      type: 'POST',
+      data: { 
+        todo: "makeSurveyName",
+        muid: muid
+      },
+      cache: false,
+      async: false,
+      success: function(r) {
+        html = "<div>" + r + " - Survey Information</div>";
+        $('#surveyName').empty();
+        $(html).appendTo('#surveyName');
+      }
     });
   },
   print: function(suid) {
@@ -311,7 +331,7 @@ wvmmsurvey.make = {
       error: function(a,b,c) { alert(a,b,c); }
     });
   },
-  popup: function() {
+  popup: function(muid) {
     // Builds dynamic survey content div using Questions table
     var html = '';
     var types = {
@@ -325,7 +345,7 @@ wvmmsurvey.make = {
       type: 'POST',
       data: { 
         todo: "makeSurveyQuestions",
-        suid: 0
+        muid: muid
       },
       cache: false,
       async: false,
@@ -454,22 +474,6 @@ wvmmsurvey.make = {
         $(html).appendTo('#popupContent');
       }
     });
-  },
-  useremail: function () {
-    // Returns user e-mail address
-
-
-// DUMB ASS!!!
-
-
-
-
-
-
-
-
-
-
   },
   refresh: function(type,quid) {
     // Refresh the child window
@@ -630,6 +634,30 @@ wvmmsurvey.act = {
       },
       error: function(a,b,c) {
         alert(a+","+b+","+c);
+      }
+    });
+  },
+  copySurvey: function(oldmuid,newdesc) {
+    // Copies a survey from old to new
+    var d = new Date(newdesc);
+    $.ajax({
+      url: "wvmmsurvey.php", 
+      type: 'POST',
+      data: { 
+        todo: "copySurvey",
+        oldmuid: oldmuid,
+        newdatedesc: d.getFullYear()+"-"+dtc.lib.pad((d.getMonth()+1))+"-"+dtc.lib.pad(d.getDate())
+      },
+      cache: false,
+      async: false,
+      success: function(r) {
+        r && alert(r);
+        !r && alert("The survey copy failed");
+        r == "Survey successfully copied" && window.close();
+      },
+      error: function(a,b,c) {
+        alert(a+","+b+","+c);
+        window.close();
       }
     });
   }

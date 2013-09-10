@@ -12,10 +12,11 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
+        var muid = <?php echo $_POST['editableSurveys']; ?>;
         var popupOptions = 'height=600,width=800,directories=no,location=no,menubar=no,status=no,'
                          + 'titlebar=no,toolbar=no,resizable=yes,scrollbars=yes';
-        $('#changeSurvey').click(function () { window.open('popup.php','_blank',popupOptions); });
-        wvmmsurvey.make.questions(0);
+        $('#changeSurvey').click(function () { window.open('popup.php?muid='+muid,'_blank',popupOptions); });
+        wvmmsurvey.make.questions(muid);
         $(':input').prop('disabled', true);
         // Swapping CSS buttons for images in browsers that do not support advanced features
         (!$.support.opacity) && $('.btnimg').css('display','block');
@@ -34,10 +35,8 @@
         <hr>
         <p class="survey-question">Click the Change Survey button below to open a pop up window used to change the survey 
           questions and layout.</p>
-        <p class="survey-question">Changes made here will only effect new surveys. To preserve data integrity, existing survey
-          questions cannot be changed.</p>
         <p><a id="changeSurvey" href="#" class="large button wvorange"><img src="img/changesurvey.jpg" class="btnimg" style="display:none;margin-left: 0px;"><span class="btntext">Change Survey</span></a></p>
-        <div class="survey-heading">Survey Information</div>
+        <div id="surveyName" class="survey-heading"><!-- Dynamically populated --></div>
         <hr>
         <table style="padding-left: 10px;">
           <tr>

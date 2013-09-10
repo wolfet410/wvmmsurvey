@@ -12,7 +12,7 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.make.popup();
+        wvmmsurvey.make.popup(<?php echo $_GET['muid']; ?>);
         var radios = [];
         $(document).find(':input').each(function() {
           switch(this.type) {

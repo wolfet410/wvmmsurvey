@@ -42,8 +42,14 @@ function makeCreateSurvey() {
 
 function makeSelectSurvey() {
   // Gets list of surveys to be selected
-  $a = $_SESSION['admin'] == 'true' ? '' : 'email = "' . $_SESSION['email'] . '"';
-  echo fnQueryJSON("Surveys.suid,Surveys.store,Surveys.userCreated,Stores.desc,Stores.market,Stores.region","Surveys INNER JOIN Stores ON Surveys.store = Stores.sap",$a,"store");
+  $where = $_SESSION['admin'] == 'true' ? '' : 'email = "' . $_SESSION['email'] . '"';
+  echo fnQueryJSON("Surveys.suid,Surveys.store,Surveys.userCreated,Stores.desc,Stores.market,Stores.region","Surveys INNER JOIN Stores ON Surveys.store = Stores.sap",$where,"store");
+}
+
+function makeAdminSurvey() {
+  // Populate the drop down lists for the admin survey page
+  $where = safe($_POST['list']) == 'editable' ? 'datedesc > CURRENT_DATE()' : '';
+  echo fnQueryJSON("muid,DATE_FORMAT(datedesc,'%M %Y') AS monthdesc","Months",$where,"datedesc");
 }
 
 function makeEditSurvey() {
@@ -53,26 +59,28 @@ function makeEditSurvey() {
 
 function makeSurveyQuestions() {
   // Queries Questions table, returns JSON
-  $suid = safe($_POST['suid']);
-  if ($suid == '0') {
-    // $suid is 0 when we are changing the survey questions
-    echo fnQueryJSON("*","Questions","active='true'","sort");
-  } else {
-    // Otherwise $suid is set to the survey uid that we are editing
-    $q = "SELECT quids FROM Surveys WHERE suid = $suid";
-    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting quids from Survey: " . mysql_error());
-    $quids = mysql_result($r,0);
-    $quidArray = explode(",",$quids);
-    $s[] = '';
-    foreach ($quidArray as $v) {
-      $q = "SELECT * FROM Questions WHERE quid = $v";
-      $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting question row $v: " . mysql_error());
-      while ($a = mysql_fetch_assoc($r)) {
-        $s[] = $a;
-      }
+  $muid = safe($_POST['muid']);
+  $q = "SELECT quids FROM Months WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting quids from Months: " . mysql_error());
+  $quids = mysql_result($r,0);
+  $quidArray = explode(",",$quids);
+  $s[] = '';
+  foreach ($quidArray as $v) {
+    $q = "SELECT * FROM Questions WHERE quid = $v";
+    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting question row $v: " . mysql_error());
+    while ($a = mysql_fetch_assoc($r)) {
+      $s[] = $a;
     }
-    if (isset($s)) echo json_encode($s);
   }
+  if (isset($s)) echo json_encode($s);
+}
+
+function makeSurveyName() {
+  $muid = safe($_POST['muid']);
+  $q = "SELECT DATE_FORMAT(datedesc,'%M %Y') AS monthdesc FROM Months WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeSurveyName SQL errors");
+  $name = mysql_result($r, 0);
+  echo $name;
 }
 
 function makeGetAnswers() {
@@ -312,6 +320,24 @@ function printRating() {
   }
   $ratingAverage = $ratingTotal / $ratingMaximum;
   echo $ratingAverage;
+}
+
+function copySurvey() {
+  // Copies an existing survey into a new one
+  $oldMuid = safe($_POST['oldmuid']);
+  $newDateDesc = safe($_POST['newdatedesc']);
+  $q = "SELECT muid FROM Months WHERE datedesc = '$newDateDesc'";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: copySurvey problems checking dates");
+  if (mysql_num_rows($r) > 0) {
+    echo "A survey already exists for $newDateDesc"; 
+    die;
+  }
+  $q = "SELECT quids FROM Months WHERE muid = $oldMuid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: copySurvey problems getting old quids");
+  $oldQuids = mysql_result($r,0);
+  $q = "INSERT INTO Months (datedesc, quids) VALUES ('$newDateDesc', '$oldQuids')";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: copySurvey problems writing new survey");
+  echo "Survey successfully copied";
 }
 
 ?>
