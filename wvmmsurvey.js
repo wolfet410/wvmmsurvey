@@ -351,7 +351,8 @@ wvmmsurvey.make = {
       async: false,
       dataType: 'json',
       success: function(aq) {
-        html = "<table style='font-family: Courier;'><tr><th>Row&nbsp;</th><th>Type</th><th>Options</th></tr><tr>";
+        html = "<input type='hidden' id='muid' value='" + muid + "'>";
+        html += "<table style='font-family: Courier;'><tr><th>Row&nbsp;</th><th>Type</th><th>Options</th></tr><tr>";
         $.each(aq, function(key, val) {
           eo++;
           // Begin row
@@ -563,6 +564,7 @@ wvmmsurvey.act = {
       type: 'POST',
       data: { 
         todo: "actWriteQuestions",
+        muid: $('#muid').val(),
         oldquid: oldquid,
         type: type,
         text: text,
@@ -622,6 +624,7 @@ wvmmsurvey.act = {
       type: 'POST',
       data: { 
         todo: "row"+action,
+        muid: $('#muid').val(),
         quid: quid,
         direction: direction
       },
@@ -639,7 +642,8 @@ wvmmsurvey.act = {
   },
   copySurvey: function(oldmuid,newdesc) {
     // Copies a survey from old to new
-    var d = new Date(newdesc);
+    // Needed to add the 'day' for IE to properly parse the date
+    var d = new Date(newdesc.split(" ")[0]+" 01 "+newdesc.split(" ")[1]);
     $.ajax({
       url: "wvmmsurvey.php", 
       type: 'POST',

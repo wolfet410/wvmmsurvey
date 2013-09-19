@@ -121,6 +121,7 @@ function actWriteQuestions() {
   // Writes question changes to database
   // Note: changes to questions create new rows in database by design, 
   // to avoid nullifying past survey results
+  $muid = safe($_POST['muid']);
   $oldquid = safe($_POST['oldquid']);
   $table = isset($_POST['table']) && !empty($_POST['table']) ? safe($_POST['table']) : 'false';
   $rated = isset($_POST['rated']) && !empty($_POST['rated']) ? safe($_POST['rated']) : 'false';
@@ -130,19 +131,23 @@ function actWriteQuestions() {
   $answers == 'undefined,undefined,undefined,undefined' && $answers = '';
   $notes = isset($_POST['notes']) && !empty($_POST['notes']) ? safe($_POST['notes']) : 'false';
   $notestext = isset($_POST['notestext']) && !empty($_POST['notestext']) ? safe($_POST['notestext']) : '';
-  // Get sort value of old row
-  $q = "SELECT sort FROM Questions WHERE quid = '$oldquid'";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting question sort value: " . mysql_error());
-  $sort = mysql_result($r,0);
-  if (!$sort) fnErrorDie("WVMMSURVEY: Empty sort value");
-  // Write new row
-  $q = "INSERT INTO Questions (`active`, `sort`, `table`, `rated`, `type`, `text`, `answers`, `notes`, `notestext`) "
-     . "VALUES ('true', '$sort', '$table', '$rated', '$type', '".mysql_real_escape_string($text)."', '".mysql_real_escape_string($answers)
+  // Get list of original QUIDs from Months so we can modify it with the new changes
+  $q = "SELECT quids FROM Months WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: actWriteQuestions Problems getting quids from Months");
+  $oldMonthsQuids = mysql_result($r, 0);
+  $q = "INSERT INTO Questions (`table`, `rated`, `type`, `text`, `answers`, `notes`, `notestext`) "
+     . "VALUES ('$table', '$rated', '$type', '".mysql_real_escape_string($text)."', '".mysql_real_escape_string($answers)
      . "', '$notes', '".mysql_real_escape_string($notestext)."')";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems writing questions: " . mysql_error());
-  // Deactivate old row
-  $q = "UPDATE Questions SET `active` = 'false' WHERE `quid` = '$oldquid'";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems deactivating question: " . mysql_error());
+  $newquid = mysql_insert_id();
+  $arrQuids = explode(",",$oldMonthsQuids);
+  foreach($arrQuids as &$v) {
+    $v = $v == $oldquid ? $newquid : $v;
+  }
+  unset($v);
+  $newMonthsQuids = implode(",",$arrQuids);
+  $q = "UPDATE Months SET quids = '$newMonthsQuids' WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: actWriteQuestions Writing new quids to Months"); 
   echo 0;
 }
 
@@ -184,23 +189,48 @@ function rowDel() {
 }
 
 function rowSwap() {
+  $muid = safe($_POST['muid']);
   $quid = safe($_POST['quid']);
   $direction = safe($_POST['direction']);
   ($direction != 'up' && $direction != 'down') && fnErrorDie("WVMMSURVEY: Invalid direction during rowSwap");
-  // Get sort value of the row that we are moving from & quid of the row we are moving to
-  $q = "SELECT sort FROM Questions WHERE quid = $quid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting from sort value: " . mysql_error());
-  $from = mysql_result($r,0);
-  $q = "SELECT quid FROM Questions WHERE sort = '" . ($direction == 'up' ? $from - 1 : $from + 1) . "'";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting to quid");
-  $toQuid = mysql_result($r,0);
-  // Swap
-  $q = "UPDATE Questions SET sort = '";
-  $q .= $direction == 'up' ? $from - 1 : $from + 1;
-  $q .= "' WHERE quid='$quid'";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems changing from value: " . mysql_error());
-  $q = "UPDATE Questions SET sort = '$from' WHERE quid='$toQuid'";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems changing to value: " . mysql_error());
+  
+  // Get current QUID list
+  $q = "SELECT quids FROM Months WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: rowSwap getting quids from Months");
+  $oldQuids = mysql_result($r, 0);
+  $arrQuids = explode(",",$oldQuids);
+
+  // Swap Quids appropriately
+  $n = 0;
+  foreach($arrQuids as $k => $v) {
+    switch($direction) {
+      case 'up': 
+        if ($v == $quid) {
+          if ($n > 0) {
+            $t = $arrQuids[$n-1];
+            $arrQuids[$n-1] = $arrQuids[$n];
+            $arrQuids[$n] = $t;
+          }
+        }
+        break;
+      case 'down':
+        if ($v == $quid) {
+          if ($n < (count($arrQuids)-1)) {
+            $t = $arrQuids[$n+1];
+            $arrQuids[$n+1] = $arrQuids[$n];
+            $arrQuids[$n] = $t;
+          }
+        }
+        break;
+    }
+    $n++;
+  }
+  $newQuids = implode(",",$arrQuids);
+
+  // Write back to Months
+  $q = "UPDATE Months SET quids = '$newQuids' WHERE muid = '$muid'";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: rowSwap setting quids in Months");
+
   // Sending the quid of the row that was swapped, for scrolling
   echo $quid;  
 }
