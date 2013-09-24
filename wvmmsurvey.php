@@ -37,13 +37,47 @@ function createSurvey() {
 
 function makeCreateSurvey() {
   // Gets list of stores
+  // SHOULDN'T BE NEEDED ANYMORE
   echo fnQueryJSON("*","Stores");
 }
 
-function makeSelectSurvey() {
-  // Gets list of surveys to be selected
-  $where = $_SESSION['admin'] == 'true' ? '' : 'email = "' . $_SESSION['email'] . '"';
-  echo fnQueryJSON("Surveys.suid,Surveys.store,Surveys.userCreated,Stores.desc,Stores.market,Stores.region","Surveys INNER JOIN Stores ON Surveys.store = Stores.sap",$where,"store");
+function makeSelectStore() {
+  // Create Month entry if it doesn't already exist
+  $q = "SELECT muid FROM Months WHERE datedesc = '" . date("Y-m") . "-01'";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeSelectStore getting today's muid");
+  if (mysql_num_rows($r) == 0) {
+    // An muid for this month does not exist, so let's create one by copying
+    // from the previous month
+    $qp = "SELECT muid FROM Months WHERE datedesc = '" . date("Y-m",strtotime("-1 month")) . "-01'";
+    $rp = mysql_query($qp) or fnErrorDie("WVMMSURVEY: makeSelectStore getting prev muid");
+    $prevmonth = mysql_result($rp, 0);
+    copySurvey($prevmonth,date("Y-m") . "-01");
+  }
+  // Return array of stores to select from
+  $where = safe($_POST['where']);
+  $where = $where == "all" ? "" : str_replace("\\","",$where);
+  echo fnQueryJSON("*","Stores",$where,"sap");
+}
+
+function makeStoreComplete() {
+  // Returns something
+  $q = "SELECT store FROM Surveys WHERE muid = (SELECT muid FROM Months WHERE datedesc = "
+     . "'" . date("Y-m") . "-01')";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeStoreComplete getting suids");
+  if (mysql_num_rows($r) > 0) {
+    // At least one survey has been started for the current month
+    while ($suid = mysql_fetch_assoc($r)) {
+      // FOR EACH SURVEY THAT HAS BEEN STARTED, WE NEED TO GET THE LIST OF QUESTIONS FOR
+      // THAT SURVEY THAT REQUIRE AN ANSWER, AND THEN CHECK IF THERE IS AN ANSWER FOR
+      // EACH QUESTION
+      // I'M GOING TO HAVE TO COME BACK TO THIS AFTER I'VE I'M ABLE TO WRITE SURVEY RESULTS
+      // IN THE MEANTIME, WE'LL JUST ECHO 1 SO JAVASCRIPT DOESN'T COMPLAIN
+    }
+    echo 1;
+  } else {
+    // Not even one survey has been started for the current month
+    echo 0;
+  }
 }
 
 function makeAdminSurvey() {
@@ -53,8 +87,27 @@ function makeAdminSurvey() {
 }
 
 function makeEditSurvey() {
-  // Gets static info for survey being edited
-  echo fnQueryJSON("suid,email,store,userCreated,systemLastModified","Surveys","suid=".safe($_POST['suid']));
+  // Gets static info for survey being edited if it exists
+  // If it doesn't exist, create it
+  $store = safe($_POST['store']);
+  $q = "SELECT * FROM Surveys WHERE store = "
+     . "'$store' AND muid=(SELECT muid FROM Months WHERE datedesc = '" . date("Y-m") . "-01')";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeEditSurvey getting survey info");
+  if (mysql_num_rows($r) > 0) {
+    // Survey exists, ship it
+    while ($a = mysql_fetch_assoc($r)) {
+      $s[] = $a;
+    }
+    echo json_encode($s);
+  } else {
+    // Survey doesn't exist, create it
+    $q = "INSERT INTO Surveys (email,store,muid) VALUES ('"
+       . $_SESSION['email']."','$store',(SELECT muid FROM Months WHERE datedesc = '" . date("Y-m") . "-01'))";
+    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeEditSurvey creating survey");
+    $suid = mysql_insert_id();
+    // Getting the data from the database instead of building JSON by hand to get correct systemLastModified
+    echo fnQueryJSON("*","Surveys","suid='$suid'");
+  }
 }
 
 function makeSurveyQuestions() {
@@ -95,6 +148,43 @@ function makeGetAnswers() {
     $s[] = $a;
   }
   if (isset($s)) { echo json_encode($s); } else { echo 0; }
+}
+
+function makeCompPercent() {
+  $store = safe($_POST['store']);
+  $muid = safe($_POST['muid']);
+  if ($muid == 'current') {
+    // If $muid = 'current' then we need to find the real muid for the current month
+    $q = "SELECT muid FROM Months WHERE datedesc = '" . date("Y-m") . "-01'";
+    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting muid");
+    $muid = mysql_result($r, 0);
+  }
+  $q = "SELECT suid FROM Surveys WHERE store = '$store' AND muid = '$muid'";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting suid");
+  if (mysql_num_rows($r) == 0) { echo 0; die; }
+  $suid = mysql_result($r, 0);
+  $q = "SELECT quids FROM Months WHERE muid = '$muid'";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting quids");
+  if (mysql_num_rows($r) == 0) { echo 0; die; }
+  $quids = mysql_result($r, 0);
+  $arrQuids = explode(",", $quids);
+  $quidTotal = $quidCount = 0;
+  foreach($arrQuids as $quid) {
+    // Work depending on question type
+    $q = "SELECT type FROM Questions WHERE quid = '$quid'";
+    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting type");
+    if (mysql_num_rows($r) == 0) { echo 0; die; }
+    $type = mysql_result($r, 0);
+    if ($type == 'radio' || $type == 'textbox') {
+      // Only care about radio or textbox types
+      $quidTotal++;
+      $type = $type == 'textbox' ? 'textarea' : $type;
+      $q = "SELECT COUNT(*) FROM Results WHERE suid = '$suid' AND quid = '$quid' AND $type <> ''";
+      $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting count".mysql_error());
+      (mysql_result($r, 0) > 0) && $quidCount++;
+    }
+  }
+  echo intval(($quidCount/$quidTotal)*100);
 }
 
 function actWriteResults() {
@@ -352,10 +442,12 @@ function printRating() {
   echo $ratingAverage;
 }
 
-function copySurvey() {
+function copySurvey($oldMuid='post',$newDateDesc='post') {
   // Copies an existing survey into a new one
-  $oldMuid = safe($_POST['oldmuid']);
-  $newDateDesc = safe($_POST['newdatedesc']);
+  // If no parameteres were passed, get them from post
+  $output = $oldMuid == 'post' ? "Survey successfully copied" : "";
+  $oldMuid = $oldMuid == 'post' ? safe($_POST['oldmuid']) : $oldMuid;
+  $newDateDesc = $newDateDesc == 'post' ? safe($_POST['newdatedesc']) : $newDateDesc;
   $q = "SELECT muid FROM Months WHERE datedesc = '$newDateDesc'";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: copySurvey problems checking dates");
   if (mysql_num_rows($r) > 0) {
@@ -367,7 +459,7 @@ function copySurvey() {
   $oldQuids = mysql_result($r,0);
   $q = "INSERT INTO Months (datedesc, quids) VALUES ('$newDateDesc', '$oldQuids')";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: copySurvey problems writing new survey");
-  echo "Survey successfully copied";
+  if ($output != "") { echo $output; }
 }
 
 ?>

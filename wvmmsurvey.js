@@ -44,33 +44,110 @@ wvmmsurvey.make = {
       }
     });
 	},
-  select: function() {
-    // Builds and displays the list of existing surveys to select from
+  select: function(selection,column) {
+    // Populate stores and maybe regions, and markets
+    // selection is either 'all', or 'region=whatever', or 'market=whatever'
+    // column is optional, only if selection = all, and = region or market
+    var where = selection == 'all' ? 'all' : column + "='" + selection + "'";
     $.ajax({
-      url: "wvmmsurvey.php",
+      url: 'wvmmsurvey.php',
       type: 'POST',
       data: { 
-        todo: "makeSelectSurvey"
+        todo: 'makeSelectStore',
+        where: where
       },
       cache: false,
       async: false,
       dataType: 'json',
       success: function(arr) {
-        var html = '<select id="surveyList" name="surveyList" class="chzn-select" data-placeholder="Select a survey...">';
-        html += '<option value=""></option>';
+        // Enable the Show completion % check box and clear it
+        $('#sc').attr('disabled', false);
+        $('#sc').attr('checked', false);
+        // Region radio buttons
+        if (selection == 'all') {
+          var htmlDynamicRegion = '<label class="survey-question"><input type="radio" name="region" value="all" ';
+          htmlDynamicRegion += column == 'region' ? 'checked="checked"' : 'disabled="true"';
+          htmlDynamicRegion += ' onclick="wvmmsurvey.make.select(\'all\',\'region\');">All</label><br>';
+          var htmlDynamicMarket = '<label class="survey-question"><input type="radio" name="market" value="all" ';
+          htmlDynamicMarket += column == 'market' ? 'checked="checked"' : 'disabled="true"';
+          htmlDynamicMarket += ' onclick="wvmmsurvey.make.select(\'all\',\'market\');">All</label><br>';
+          var arrRegion = [];
+          var arrMarket = [];
+        }
+        var htmlDynamicStore = '<table>';
+        // Find all of the unique regions & markets
         $.each(arr, function(k,v){
-          if (v['suid'] !== '') {
-             html += '<option value="' + v['suid'] + '">' + v['store'] + ' - ' + v['desc'] + ' - ' + v['market'] + ' - ' + v['region'] + ' - ' + v['userCreated'] + '</option>';
-          } 
+          (selection == 'all') && ($.inArray(v['region'], arrRegion) === -1) && arrRegion.push(v['region']);
+          (selection == 'all') && ($.inArray(v['market'], arrMarket) === -1) && arrMarket.push(v['market']);
+          htmlDynamicStore += '<tr><td><a href="javascript:;" class="small button wvorange" style="width:40px;"'
+                           + ' onclick="var sap=$(this).parent().next().text().split(\' \')[0]; document.location.href=\'edit.php?store=\'+sap;"'
+                           + '><img src="img/editsmall.jpg" class="btnimg" style="display:none;">'
+                           + '<span class="btntext">Edit</span></a></td>'
+                           + '<td class="survey-question store" style="font-weight:normal;">' + v['sap'] + ' - ' + v['desc'] + '</td></tr>';
         });
-        html += '</select>';
-        $('#selectSurvey').empty();
-        $(html).appendTo('#selectSurvey');
-        $(".chzn-select").chosen();
+        htmlDynamicStore += '</table>';
+        if (selection == 'all') {
+          arrRegion.sort();
+          arrMarket.sort();
+          $.each(arrRegion, function(k,v) {
+            htmlDynamicRegion += '<label class="survey-question"><input type="radio" name="region" value="'
+                              + v + '" onclick="wvmmsurvey.make.select(this.value,\'region\');">' + v + '</label><br>';
+          });
+          $.each(arrMarket, function(k,v) {
+            htmlDynamicMarket += '<label class="survey-question"><input type="radio" name="market" value="'
+                              + v + '" onclick="wvmmsurvey.make.select(this.value,\'market\');"">' + v + '</label><br>';
+          });
+          $('#dynamicRegion').empty();
+          $(htmlDynamicRegion).appendTo('#dynamicRegion');
+          $('#dynamicMarket').empty();
+          $(htmlDynamicMarket).appendTo('#dynamicMarket');
+          // Disabling and enabling the appropriate Filter
+          var disabled = column == 'region' ? 'market' : column == 'market' ? 'region' : '';
+          $('input[name='+disabled+']').attr('disabled',true);
+          $('input[name='+disabled+']').attr('checked',false);
+          $('input[name='+column+']').attr('disabled',false);
+          $('input[name='+column+'][value=all]').attr('checked',true);
+        }
+        $('#dynamicStore').empty();
+        $(htmlDynamicStore).appendTo('#dynamicStore');
+        // Setting background color of adjacent column
+        // Adapted from: http://stackoverflow.com/questions/7025183/how-to-addclass-to-the-next-td-on-link-hover-in-jquery
+        $('.small').hover(function() {
+          $(this).parent().next().css('background-color','#cdcdcd');
+        }, function() {
+          $(this).parent().next().css('background-color','');
+        });
+        // Swapping CSS buttons for images in browsers that do not support advanced features
+        (!$.support.opacity) && $('.btnimg').css('display','block');
+        (!$.support.opacity) && $('.btntext').css('display','none');
+        (!$.support.opacity) && $('a').removeClass('small large button wvorange');
+        // Resetting completed colors 
+        $('td').removeClass('green red yellow');
       }
     });
   },
-  edit: function(suid) {
+  compPercent: function(store,muid) {
+    // Use the store and muid to return the completion percentage of a specific survey
+    // If we do not know the muid, just use 'current' when calling the function and PHP will use the current month's muid
+    // Note, async is important here: http://stackoverflow.com/questions/5316697/jquery-return-data-after-ajax-call-success
+    var comp = -1;
+    $.ajax({
+      url: "wvmmsurvey.php",
+      type: 'POST',
+      data: { 
+        todo: "makeCompPercent",
+        store: store,
+        muid: muid
+      },
+      cache: false,
+      async: false,
+      success: function(r) {
+        comp = r;
+      }
+    });
+    return comp;
+  },
+  edit: function(store) {
     // Gets and displays the sap & time stamp info for the survey being edited
     var storeHtml = '';
     var surveyorHtml = '';
@@ -81,7 +158,7 @@ wvmmsurvey.make = {
       type: 'POST',
       data: { 
         todo: "makeEditSurvey",
-        suid: suid
+        store: store
       },
       cache: false,
       async: false,
@@ -90,20 +167,18 @@ wvmmsurvey.make = {
         $.each(r, function(key, val) {
           // Internet Explorer has problems with - in dates, see: 
           // http://stackoverflow.com/questions/8098963/javascript-datedatestring-returns-nan-on-specific-server-and-browser
-          var dc = new Date(val['userCreated'].replace(/-/g,"/"));
           var dm = new Date(val['systemLastModified'].replace(/-/g,"/"));
           storeHtml = '<div>SAP Number: ' + val['store'] + '</div>';
           surveyorHtml = '<div>' + val['email'] + '</div>';
-          createdHtml = '<div>' + dtc.lib.formatDate(dc) + '</div>';
           modifiedHtml = '<div id="modifiedDate">' + dtc.lib.formatDate(dm) + '</div>';
           $('#storeVisited').empty();
           $('#surveyor').empty();
-          $('#createdDate').empty();
           $('#modifiedDate').empty();
           $(storeHtml).appendTo('#storeVisited');
           $(surveyorHtml).appendTo('#surveyor');
-          $(createdHtml).appendTo('#createdDate');
           $(modifiedHtml).appendTo('#modifiedDate');
+          $('#muid').val(val['muid']);
+          $('#suid').val(val['suid']);
         });
       }
     });
@@ -170,25 +245,27 @@ wvmmsurvey.make = {
       $(document).find(':input').each(function() {
         var type = this.type;
         var id = this.id;
-        $.ajax({
-          url: "wvmmsurvey.php", 
-          type: 'POST',
-          data: { 
-            todo: "makeGetAnswers",
-            type: type,
-            quid: this.id.match(/[0-9]+/g).toString(),
-            suid: suid
-          },
-          cache: false,
-          async: false,
-          dataType: 'json',
-          success: function(r) {
-            if (r != 0) {
-              (type == 'textarea') && $('textarea#'+id).val(r[0]['textarea']);
-              (type == 'radio') && $('[name='+id+'][value="'+r[0]['radio']+'"]').prop('checked',true);
+        if (id != 'muid' && id != 'suid') {
+          $.ajax({
+            url: "wvmmsurvey.php", 
+            type: 'POST',
+            data: { 
+              todo: "makeGetAnswers",
+              type: type,
+              quid: this.id.match(/[0-9]+/g).toString(),
+              suid: suid
+            },
+            cache: false,
+            async: false,
+            dataType: 'json',
+            success: function(r) {
+              if (r != 0) {
+                (type == 'textarea') && $('textarea#'+id).val(r[0]['textarea']);
+                (type == 'radio') && $('[name='+id+'][value="'+r[0]['radio']+'"]').prop('checked',true);
+              }
             }
-          }
-        });
+          });
+        }
       });
     }
     // Update the name of the survey

@@ -17,8 +17,8 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.make.edit(<?php echo $_GET['suid']; ?>);
-        wvmmsurvey.make.questions(<?php echo $_GET['suid']; ?>);
+        wvmmsurvey.make.edit(<?php echo $_GET['store']; ?>);
+        wvmmsurvey.make.questions($('#muid').val(),$('#suid').val());
         var altText = "Last Saved: " + $('#modifiedDate').text();
         $('#saveStatus').attr({'src':"/img/saved.png",'alt':altText,'title':altText});
         var radios = [];
@@ -26,13 +26,15 @@
           switch(this.type) {
             case 'textarea':
               $('textarea#'+this.id).change(function () { 
-                wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'textarea',$('textarea#'+this.id).val(),<?php echo $_GET['suid']; ?>); 
+  // SUID HERE??????
+                wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'textarea',$('textarea#'+this.id).val(),$('#suid').val()); 
               });
               break;
             case 'radio':
               if (dtc.lib.findStrInArray(this.id,radios) == -1) {
                 $('input:radio[name='+this.id+']').click(function() {
-                  wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'radio',$('input:radio[name='+this.id+']:checked').val(),<?php echo $_GET['suid']; ?>); 
+  // SUID HERE?!?!?!?!
+                  wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'radio',$('input:radio[name='+this.id+']:checked').val(),$('#suid').val()); 
                 });
                 radios.push(this.id);
               }
@@ -46,7 +48,7 @@
         // Print button
         var popupOptions = 'height=600,width=800,directories=no,location=no,menubar=no,status=no,'
                  + 'titlebar=no,toolbar=no,resizable=yes,scrollbars=yes';
-        $('#print').click(function () { window.open('print.php?suid=<?php echo $_GET['suid']; ?>','_blank',popupOptions); });
+        $('#print').click(function () { window.open('print.php?suid=<?php // echo $_GET['suid']; ?>','_blank',popupOptions); });
 
       });
     </script>
@@ -60,21 +62,19 @@
       </div>
       <div id="staticContent">
         <div class="survey-heading">Survey Information</div>
+        <input type="hidden" id="muid" value="">
+        <input type="hidden" id="suid" value="">
         <hr>
         <table style="padding-left: 10px;">
           <tr>
             <td class="survey-question" style="padding-left: 0px;"><div id="storeVisited"><!-- Dynamically populated --></div></td>
             <td class="survey-question">Surveyor:</td>
-            <td class="survey-question">Visit Date:</td>
             <td class="survey-question">Last Saved:</td>
           </tr>
           <tr>
             <td></td>
             <td class="survey-question">
               <div id="surveyor"><!-- Dynamically populated --></div>
-            </td>
-            <td class="survey-question">
-              <div id="createdDate"><!-- Dynamically populated --></div>
             </td>
             <td class="survey-question">
               <div id="modifiedDate"><!-- Dynamically populated --></div>

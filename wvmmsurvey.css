@@ -113,3 +113,15 @@ a.row-controls {
  	text-align: right;
  	width: 25%;
  }
+
+ .green {
+ 	color: green;
+ }
+
+ .yellow {
+ 	color: #C69633;
+ }
+
+ .red {
+ 	color: red;
+ }

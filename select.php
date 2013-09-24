@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Wireless Vision Market Manager Survey</title>
     <link rel="stylesheet" href="../lib/css/buttons.css">
+    <link rel="stylesheet" href="../lib/css/columns.css">
     <link rel="stylesheet" href="../lib/css/chosen.css">
     <link rel="stylesheet" href="../lib/css/anytime.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
@@ -15,13 +16,20 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.make.select();
-        $('#surveyList').change(function() { window.location.href = "edit.php?suid=" + $(this).val(); });
-        // Swapping CSS buttons for images in browsers that do not support advanced features
-        (!$.support.opacity) && $('.btnimg').css('display','block');
-        (!$.support.opacity) && $('.btntext').css('display','none');
-        (!$.support.opacity) && $('a').removeClass('large button wvorange');
+        wvmmsurvey.make.select('all','region');
       });
+      function showCompletion() {
+        // Parse the store elements on the page and show the completion percentage for each
+        alert('Your window may hang while the completion percentages load, please wait ....');
+        $('.store').each(function() {
+          var store = $(this).text().split(' ')[0];
+          var percent = wvmmsurvey.make.compPercent(store,'current');
+          var color = percent < 1 ? 'red' : percent == 100 ? 'green' : 'yellow';
+          $(this).append(", "+percent+"%").addClass(color);
+        });
+        // Disable the check box so it cannot be toggled
+        $('#sc').attr('disabled', true);
+      }
     </script>
   </head>
   <body class="body">
@@ -31,10 +39,42 @@
         <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
         <div class="headerright"><img id="printButton" src="" style="display: none;"></img></div>
       </div>      
-      <div class="survey-heading">Select Survey</div>
+      <div class="survey-heading">Month: <? echo date('F Y'); ?></div>
       <hr>
-      <p class="survey-question">Select the survey below, by the SAP # and the date &amp; time of visit. Type the SAP # to filter by store.</p>
-      <div id="selectSurvey"><!-- Dynamically populated --></div>
+      <div class="columns-two">
+        <div class="column-two">
+          <div class="survey-heading">
+            Select Store<br>
+            <label class="survey-question"><input id="sc" type="checkbox" onclick="showCompletion();">Show completion %</label>
+          </div>
+          <div id="dynamicStore" style="padding-left:10px;padding-bottom:15px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+        <div class="column-two">
+          <div class="columns-two">
+            <div class="survey-heading" style="padding-left:12px;padding-bottom:15px;">Filter By:</div>
+            <div class="column-two">
+              <label class="survey-question" style="font-size:large"><input type="radio" name="filter" value="region" checked="checked"
+                onclick="wvmmsurvey.make.select('all','region');">
+                Region
+              </label>
+              <div id="dynamicRegion" style="padding-left:10px;padding-top:12px;padding-bottom:15px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+            <div class="column-two">
+              <label class="survey-question" style="font-size:large"><input type="radio" name="filter" value="market"
+                onclick="wvmmsurvey.make.select('all','market');">
+                Market
+              </label>
+              <div id="dynamicMarket" style="padding-left:10px;padding-top:12px;padding-bottom:15px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <p class="center">
         <a href="index.php" class="large button wvorange"><img src="img/cancel.jpg" class="btnimg" style="display:none;"><span class="btntext">Cancel</span></a>
       </p>
