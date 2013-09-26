@@ -79,8 +79,11 @@ wvmmsurvey.make = {
         $.each(arr, function(k,v){
           (selection == 'all') && ($.inArray(v['region'], arrRegion) === -1) && arrRegion.push(v['region']);
           (selection == 'all') && ($.inArray(v['market'], arrMarket) === -1) && arrMarket.push(v['market']);
+          // Chrome for iOS has a bug where the window is opened in the parent window instead of a new tab, 
+          // see https://code.google.com/p/chromium/issues/detail?id=135362 for details
+          // Works fine in Safari and most other mobile web browsers, though
           htmlDynamicStore += '<tr><td><a href="javascript:;" class="small button wvorange" style="width:40px;"'
-                           + ' onclick="var sap=$(this).parent().next().text().split(\' \')[0]; document.location.href=\'edit.php?store=\'+sap;"'
+                           + ' onclick="var sap=$(this).parent().next().text().split(\' \')[0]; window.open(\'edit.php?store=\'+sap,\'_self\');"'
                            + '><img src="img/editsmall.jpg" class="btnimg" style="display:none;">'
                            + '<span class="btntext">Edit</span></a></td>'
                            + '<td class="survey-question store" style="font-weight:normal;">' + v['sap'] + ' - ' + v['desc'] + '</td></tr>';

@@ -12,6 +12,10 @@
     <script>
       $(document).ready(function() {
         wvmmsurvey.sharepoint.pass('auth','http://wvmmsurvey.buzzspace.datatechcafe.com/post.php',wvmmsurvey.sharepoint.isAdmin());
+        $('#iframe').width($(window).width()-350);
+        $(window).resize(function() { 
+          $('#iframe').width($(window).width()-350); 
+        });
       });
     </script>
   </head>
