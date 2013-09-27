@@ -59,30 +59,9 @@ function makeSelectStore() {
   echo fnQueryJSON("*","Stores",$where,"sap");
 }
 
-function makeStoreComplete() {
-  // Returns something
-  $q = "SELECT store FROM Surveys WHERE muid = (SELECT muid FROM Months WHERE datedesc = "
-     . "'" . date("Y-m") . "-01')";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeStoreComplete getting suids");
-  if (mysql_num_rows($r) > 0) {
-    // At least one survey has been started for the current month
-    while ($suid = mysql_fetch_assoc($r)) {
-      // FOR EACH SURVEY THAT HAS BEEN STARTED, WE NEED TO GET THE LIST OF QUESTIONS FOR
-      // THAT SURVEY THAT REQUIRE AN ANSWER, AND THEN CHECK IF THERE IS AN ANSWER FOR
-      // EACH QUESTION
-      // I'M GOING TO HAVE TO COME BACK TO THIS AFTER I'VE I'M ABLE TO WRITE SURVEY RESULTS
-      // IN THE MEANTIME, WE'LL JUST ECHO 1 SO JAVASCRIPT DOESN'T COMPLAIN
-    }
-    echo 1;
-  } else {
-    // Not even one survey has been started for the current month
-    echo 0;
-  }
-}
-
 function makeAdminSurvey() {
   // Populate the drop down lists for the admin survey page
-  $where = safe($_POST['list']) == 'editable' ? 'datedesc > CURRENT_DATE()' : '';
+  $where = safe($_POST['list']) == 'editable' ? 'datedesc > CURRENT_DATE()' : safe($_POST['list']) == 'select' ? 'datedesc <= CURRENT_DATE()' : '';
   echo fnQueryJSON("muid,DATE_FORMAT(datedesc,'%M %Y') AS monthdesc","Months",$where,"datedesc");
 }
 
@@ -90,8 +69,9 @@ function makeEditSurvey() {
   // Gets static info for survey being edited if it exists
   // If it doesn't exist, create it
   $store = safe($_POST['store']);
-  $q = "SELECT * FROM Surveys WHERE store = "
-     . "'$store' AND muid=(SELECT muid FROM Months WHERE datedesc = '" . date("Y-m") . "-01')";
+  $muid = safe($_POST['muid']);
+  $q = "SELECT suid,email,Surveys.store,Stores.desc,Surveys.muid,systemLastModified,Months.datedesc as datedesc FROM Surveys INNER JOIN Months ON "
+     . "Surveys.muid = Months.muid INNER JOIN Stores ON Surveys.store = Stores.sap WHERE Surveys.store='$store' AND Surveys.muid='$muid'";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeEditSurvey getting survey info");
   if (mysql_num_rows($r) > 0) {
     // Survey exists, ship it
@@ -101,12 +81,12 @@ function makeEditSurvey() {
     echo json_encode($s);
   } else {
     // Survey doesn't exist, create it
-    $q = "INSERT INTO Surveys (email,store,muid) VALUES ('"
-       . $_SESSION['email']."','$store',(SELECT muid FROM Months WHERE datedesc = '" . date("Y-m") . "-01'))";
+    $q = "INSERT INTO Surveys (email,store,muid) VALUES ('".$_SESSION['email']."','$store','$muid')";
     $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeEditSurvey creating survey");
     $suid = mysql_insert_id();
     // Getting the data from the database instead of building JSON by hand to get correct systemLastModified
-    echo fnQueryJSON("*","Surveys","suid='$suid'");
+    echo fnQueryJSON("suid,email,Surveys.store,Stores.desc,Surveys.muid,systemLastModified,Months.datedesc as datedesc",
+      "Surveys INNER JOIN Months ON Surveys.muid = Months.muid INNER JOIN Stores ON Surveys.store = Stores.sap","Surveys.store='$store' AND Surveys.muid='$muid'");
   }
 }
 
@@ -126,14 +106,6 @@ function makeSurveyQuestions() {
     }
   }
   if (isset($s)) echo json_encode($s);
-}
-
-function makeSurveyName() {
-  $muid = safe($_POST['muid']);
-  $q = "SELECT DATE_FORMAT(datedesc,'%M %Y') AS monthdesc FROM Months WHERE muid = $muid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeSurveyName SQL errors");
-  $name = mysql_result($r, 0);
-  echo $name;
 }
 
 function makeGetAnswers() {
@@ -374,18 +346,7 @@ function updateOutput() {
             if (isset($rarr[1])) { $rating = $rarr[1]; } else { $rating = ''; }
             $response = ($response > mysql_result($rr,0,1)) ? $response : mysql_result($rr,0,1);
           }
-          // Get maximum rating value to determine averages
-          $q = "SELECT answers FROM Questions WHERE quid = $v";
-          $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: updateOutput problems getting max");
-          if (mysql_num_rows($r) > 0) {
-            $ansarr = explode(",",mysql_result($r,0));
-            $max = 0;
-            foreach($ansarr as $maxv) {
-              $maxa = explode("~",$maxv);
-              isset($maxa[1]) && $max = $maxa[1] > $max ? $maxa[1] : $max;
-            }
-            $max = $max == 0 ? '' : $max;
-          }
+          $max = maxRatingValue($v);
           if ($textarea != '' || $radio != '') {
             $qu = "INSERT INTO  `Output` (`suid`,`quid`,`rating`,`maxrating`,`store`,`qtext`,`notestext`,`radio`,`textarea`,`response`) "
                 . "VALUES ('".$a['suid']."','$v','".$rating."','".$max."','".$a['store']."','$qtext','$notestext','".$radio."','$textarea','$response')";
@@ -396,6 +357,22 @@ function updateOutput() {
     }
   }
   echo 0;
+}
+
+function maxRatingValue($quid) {
+  // Return maximum rating value of a question to determine averages, returns '' if there is no maximum
+  $max = 0;
+  $q = "SELECT answers FROM Questions WHERE quid = $quid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: updateOutput problems getting max");
+  if (mysql_num_rows($r) > 0) {
+    $ansarr = explode(",",mysql_result($r,0));
+    foreach($ansarr as $maxv) {
+      $maxa = explode("~",$maxv);
+      isset($maxa[1]) && $max = $maxa[1] > $max ? $maxa[1] : $max;
+    }
+    $max = $max == 0 ? '' : $max;
+  }
+  return $max;
 }
 
 function csvBySurvey() {
@@ -426,19 +403,27 @@ function csvBySurvey() {
   fclose($fp);
 }
 
-function printRating() {
-  // Has to rebuild Output table, this is not ideal
-  updateOutput();
-  $suid = safe($_POST['suid']);
-  // Get's and sends average rating back
-  $q = "SELECT rating,maxrating FROM Output WHERE suid = $suid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data");
-  while ($a = mysql_fetch_assoc($r)) {
-    $ans[] = array($a['store'],$a['rating'],$a['qtext'],$a['notestext'],$a['radio'],$a['textarea'],$a['response']);
-    $ratingTotal += $a['rating'];
-    $ratingMaximum += $a['maxrating'];
+function makeStoreRating() {
+  // Returns the store rating
+  $muid = isset($_POST['muid']) ? safe($_POST['muid']) : $muid;
+  $suid = isset($_POST['suid']) ? safe($_POST['suid']) : $suid;
+  $ratingTotal = 0;
+  $ratingMaximum = 0;
+  $q = "SELECT quids FROM Months WHERE muid = '$muid'";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeStoreRating errors getting muids by suid");
+  $quidArray = explode(",",mysql_result($r, 0));
+  foreach ($quidArray as $v) {
+    // Getting the rating for this particular survey question, if one exists
+    $q = "SELECT radio FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = $v AND suid = $suid AND radio LIKE '%~%') "
+       . "AND quid = $v AND suid = $suid AND radio LIKE '%~%' LIMIT 1";
+    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeStoreRating getting rating answer");
+    if (mysql_num_rows($r) > 0) {
+      $cra = explode("~",mysql_result($r, 0));
+      $ratingTotal += $cra[1];
+      $ratingMaximum += maxRatingValue($v);
+    }
   }
-  $ratingAverage = $ratingTotal / $ratingMaximum;
+  $ratingAverage = $ratingMaximum != 0 ? $ratingTotal / $ratingMaximum : 0;
   echo $ratingAverage;
 }
 

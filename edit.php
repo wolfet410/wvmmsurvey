@@ -17,26 +17,34 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.make.edit(<?php echo $_GET['store']; ?>);
-        wvmmsurvey.make.questions($('#muid').val(),$('#suid').val());
+        wvmmsurvey.make.edit(<?php echo $_GET['muid']; ?>,<?php echo $_GET['store']; ?>);
+        wvmmsurvey.make.questions(<?php echo $_GET['muid']; ?>,$('#suid').val());
         var altText = "Last Saved: " + $('#modifiedDate').text();
-        $('#saveStatus').attr({'src':"/img/saved.png",'alt':altText,'title':altText});
+        $('#saveStatus').attr({'src':"img/saved.png",'alt':altText,'title':altText});
         var radios = [];
+        var d = new Date();
+        var thisMonth = dtc.lib.getFullMonth(d) + " " + d.getFullYear();
         $(document).find(':input').each(function() {
           switch(this.type) {
             case 'textarea':
-              $('textarea#'+this.id).change(function () { 
-  // SUID HERE??????
-                wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'textarea',$('textarea#'+this.id).val(),$('#suid').val()); 
-              });
+              if (thisMonth == $('#surveyInfo').text()) {
+                $('textarea#'+this.id).change(function () { 
+                  wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'textarea',$('textarea#'+this.id).val(),$('#suid').val()); 
+                });
+              } else {
+                $('textarea#'+this.id).attr('readonly','readonly');
+              }
               break;
             case 'radio':
               if (dtc.lib.findStrInArray(this.id,radios) == -1) {
-                $('input:radio[name='+this.id+']').click(function() {
-  // SUID HERE?!?!?!?!
-                  wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'radio',$('input:radio[name='+this.id+']:checked').val(),$('#suid').val()); 
-                });
-                radios.push(this.id);
+                if (thisMonth == $('#surveyInfo').text()) {
+                  $('input:radio[name='+this.id+']').click(function() {
+                    wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'radio',$('input:radio[name='+this.id+']:checked').val(),$('#suid').val()); 
+                  });
+                  radios.push(this.id);
+                } else {
+                  $('input:radio[name='+this.id+']').attr('disabled', 'disabled');
+                }
               }
               break;
           }
@@ -48,8 +56,7 @@
         // Print button
         var popupOptions = 'height=600,width=800,directories=no,location=no,menubar=no,status=no,'
                  + 'titlebar=no,toolbar=no,resizable=yes,scrollbars=yes';
-        $('#print').click(function () { window.open('print.php?suid=<?php // echo $_GET['suid']; ?>','_blank',popupOptions); });
-
+        $('#print').click(function () { window.open('print.php?muid=<?php echo $_GET["muid"]; ?>&store=<?php echo $_GET["store"]; ?>&suid='+$('#suid').val(),'_blank',popupOptions); });
       });
     </script>
   </head>
@@ -58,21 +65,23 @@
       <div class="header">
         <div class="headerleft"><img id="saveStatus" src=""></img></div>
         <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
-        <div class="headerright"><a href="javascript:;" id="print"><img id="printButton" src="/img/print.png" alt="Print Survey" title="Print Survey" border=0></img></a></div>
+        <div class="headerright"><a href="javascript:;" id="print"><img id="printButton" src="img/print.png" alt="Print Survey" title="Print Survey" border=0></img></a></div>
       </div>
       <div id="staticContent">
-        <div class="survey-heading">Survey Information</div>
-        <input type="hidden" id="muid" value="">
+        <div id="surveyInfo" class="survey-heading"><!--Dynamically populated --></div>
+        <input type="hidden" id="muid" value="<?php echo $_GET['muid']; ?>">
         <input type="hidden" id="suid" value="">
         <hr>
         <table style="padding-left: 10px;">
           <tr>
-            <td class="survey-question" style="padding-left: 0px;"><div id="storeVisited"><!-- Dynamically populated --></div></td>
+            <td class="survey-question" style="padding-left: 0px;">Store:</td>
             <td class="survey-question">Surveyor:</td>
             <td class="survey-question">Last Saved:</td>
           </tr>
           <tr>
-            <td></td>
+            <td class="survey-question" style="padding-left: 0px;">
+              <div id="storeVisited"><!-- Dynamically populated --></div>
+            </td>
             <td class="survey-question">
               <div id="surveyor"><!-- Dynamically populated --></div>
             </td>
@@ -81,6 +90,9 @@
             </td>
           </tr>
         </table>
+        <br><div class="survey-heading">Store Rating</div>
+        <hr>
+        <div id="ratingDiv"><!-- Dynamically populated --></div>
       </div>
       <div id="dynamicContent">
         <!-- Dynamically populated -->

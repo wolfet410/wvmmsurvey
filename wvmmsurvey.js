@@ -83,9 +83,11 @@ wvmmsurvey.make = {
           // see https://code.google.com/p/chromium/issues/detail?id=135362 for details
           // Works fine in Safari and most other mobile web browsers, though
           htmlDynamicStore += '<tr><td><a href="javascript:;" class="small button wvorange" style="width:40px;"'
-                           + ' onclick="var sap=$(this).parent().next().text().split(\' \')[0]; window.open(\'edit.php?store=\'+sap,\'_self\');"'
-                           + '><img src="img/editsmall.jpg" class="btnimg" style="display:none;">'
-                           + '<span class="btntext">Edit</span></a></td>'
+                           + ' onclick="var sap=$(this).parent().next().text().split(\' \')[0]; '
+                           + 'var m=$(\'#dropdownMonth\').val();'
+                           + 'window.open(\'edit.php?muid=\'+m+\'&store=\'+sap,\'_self\');"'
+                           + '><img src="img/editsmall.jpg" class="btnimg editimg" style="display:none;">'
+                           + '<span class="btntext edittext">Edit</span></a></td>'
                            + '<td class="survey-question store" style="font-weight:normal;">' + v['sap'] + ' - ' + v['desc'] + '</td></tr>';
         });
         htmlDynamicStore += '</table>';
@@ -129,6 +131,34 @@ wvmmsurvey.make = {
       }
     });
   },
+  selectMonth: function() {
+    // Populates selectMonth drop down list
+    var html = '<label>Month: <select id="dropdownMonth">';
+    var d = new Date();
+    var month = dtc.lib.getFullMonth(d);
+    var year = d.getFullYear();
+    $.ajax({
+      url: "wvmmsurvey.php",
+      type: 'POST',
+      data: { 
+        todo: "makeAdminSurvey",
+        list: 'select'
+      },
+      cache: false,
+      async: false,
+      dataType: 'json',
+      success: function(arr) {
+        $.each(arr, function(key, val) {
+          html += '<option value="'+val['muid']+'"';
+          html += month+' '+year == val['monthdesc'] ? ' selected="selected"' : '';
+          html += '>'+val['monthdesc']+'</option>';
+        });
+      }
+    });
+    html += "</select></label>";
+    $('#selectMonth').empty();
+    $(html).appendTo('#selectMonth');
+  },
   compPercent: function(store,muid) {
     // Use the store and muid to return the completion percentage of a specific survey
     // If we do not know the muid, just use 'current' when calling the function and PHP will use the current month's muid
@@ -150,18 +180,19 @@ wvmmsurvey.make = {
     });
     return comp;
   },
-  edit: function(store) {
+  edit: function(muid,store) {
     // Gets and displays the sap & time stamp info for the survey being edited
     var storeHtml = '';
-    var surveyorHtml = '';
-    var createdHtml = '';
+    var surveyInfoHtml = '';
+    var surveyorHtml = ''; 
     var modifiedHtml = '';
     $.ajax({
       url: "wvmmsurvey.php",
       type: 'POST',
       data: { 
         todo: "makeEditSurvey",
-        store: store
+        store: store,
+        muid: muid
       },
       cache: false,
       async: false,
@@ -171,16 +202,19 @@ wvmmsurvey.make = {
           // Internet Explorer has problems with - in dates, see: 
           // http://stackoverflow.com/questions/8098963/javascript-datedatestring-returns-nan-on-specific-server-and-browser
           var dm = new Date(val['systemLastModified'].replace(/-/g,"/"));
-          storeHtml = '<div>SAP Number: ' + val['store'] + '</div>';
+          var dd = new Date(val['datedesc'].replace(/-/g,"/"));
+          surveyInfoHtml = '<div>' + dtc.lib.getFullMonth(dd) + " " + dd.getFullYear() + '</div>';
+          storeHtml = '<div>' + val['store'] + ' - ' + val['desc'] + '</div>';
           surveyorHtml = '<div>' + val['email'] + '</div>';
           modifiedHtml = '<div id="modifiedDate">' + dtc.lib.formatDate(dm) + '</div>';
+          $('#surveyInfo').empty();
           $('#storeVisited').empty();
           $('#surveyor').empty();
           $('#modifiedDate').empty();
+          $(surveyInfoHtml).appendTo('#surveyInfo');
           $(storeHtml).appendTo('#storeVisited');
           $(surveyorHtml).appendTo('#surveyor');
           $(modifiedHtml).appendTo('#modifiedDate');
-          $('#muid').val(val['muid']);
           $('#suid').val(val['suid']);
         });
       }
@@ -271,25 +305,26 @@ wvmmsurvey.make = {
         }
       });
     }
-    // Update the name of the survey
-    html = '';
+    // Update overall rating
     $.ajax({
       url: "wvmmsurvey.php", 
       type: 'POST',
       data: { 
-        todo: "makeSurveyName",
-        muid: muid
+        todo: "makeStoreRating",
+        muid: muid,
+        suid: suid
       },
       cache: false,
       async: false,
       success: function(r) {
-        html = "<div>" + r + " - Survey Information</div>";
-        $('#surveyName').empty();
-        $(html).appendTo('#surveyName');
-      }
+        html = '<span style="font-size:2em;font-weight:bold;">'+(r*100).toFixed(0)+'%</span>';
+        $('#ratingDiv').empty();
+        $(html).appendTo('#ratingDiv');
+      },
+      error: function(a,b,c) { alert(a,b,c); }
     });
   },
-  print: function(suid) {
+  print: function(muid,suid) {
     // Builds dynamic survey content div using Questions table
     var html = '';
     // Show all questions in DOM
@@ -298,7 +333,7 @@ wvmmsurvey.make = {
       type: 'POST',
       data: { 
         todo: "makeSurveyQuestions",
-        suid: suid
+        muid: muid
       },
       cache: false,
       async: false,
@@ -398,13 +433,14 @@ wvmmsurvey.make = {
       url: "wvmmsurvey.php", 
       type: 'POST',
       data: { 
-        todo: "printRating",
+        todo: "makeStoreRating",
+        muid: muid,
         suid: suid
       },
       cache: false,
       async: false,
       success: function(r) {
-        html = '<span style="font-weight:bold;">Overall Rating: '+(r*100).toFixed(0)+'%</span>';
+        html = '<span style="font-size:4em;font-weight:bold;">'+(r*100).toFixed(0)+'%<br><br></span>';
         $('#ratingDiv').empty();
         $(html).appendTo('#ratingDiv');
       },
@@ -571,7 +607,7 @@ wvmmsurvey.make = {
 wvmmsurvey.act = {
 	save: function(quid,type,value,suid) {
     var altText = "Saving ...";
-    $('#saveStatus').attr({'src':"/img/saving.png",'alt':altText,'title':altText});
+    $('#saveStatus').attr({'src':"img/saving.png",'alt':altText,'title':altText});
     $('#saveStatus').css('display', 'block');
 		$.ajax({
       url: "wvmmsurvey.php", 
@@ -589,20 +625,38 @@ wvmmsurvey.act = {
       success: function(r) {
         if (r != "0" && r != null) {
           var altText = "Last Saved: " + r;
-          $('#saveStatus').attr({'src':"/img/saved.png",'alt':altText,'title':altText});
+          $('#saveStatus').attr({'src':"img/saved.png",'alt':altText,'title':altText});
           $('#saveStatus').css('display', 'block');
           var modifiedHtml = '<div id="modifiedDate">' + r + '</div>';
           $('#modifiedDate').empty();
           $(modifiedHtml).appendTo('#modifiedDate');
+          // Update overall rating
+          $.ajax({
+            url: "wvmmsurvey.php", 
+            type: 'POST',
+            data: { 
+              todo: "makeStoreRating",
+              muid: $('#muid').val(),
+              suid: $('#suid').val()
+            },
+            cache: false,
+            async: false,
+            success: function(r) {
+              var html = '<span style="font-size:2em;font-weight:bold;">'+(r*100).toFixed(0)+'%</span>';
+              $('#ratingDiv').empty();
+              $(html).appendTo('#ratingDiv');
+            },
+            error: function(a,b,c) { alert(a,b,c); }
+          });
         } else {
           var altText = "Error writing to database!";
-          $('#saveStatus').attr({'src':"/img/error.png",'alt':altText,'title':altText});
+          $('#saveStatus').attr({'src':"img/error.png",'alt':altText,'title':altText});
           $('#saveStatus').css('display', 'block');
         }
       },
       error: function() {
         var altText = "Error sending data to server!";
-        $('#saveStatus').attr({'src':"/img/error.png",'alt':altText,'title':altText});
+        $('#saveStatus').attr({'src':"img/error.png",'alt':altText,'title':altText});
         $('#saveStatus').css('display', 'block');
       }
     });
@@ -762,7 +816,7 @@ wvmmsurvey.report = {
 
 wvmmsurvey.sharepoint = {
   isAdmin: function() {
-    // Returns e-mail address,(true or false) if logged on user is a member of the SandBox Owners group
+    // Returns e-mail address,(true or false) if logged on user is a member of the Market Manager Survey Owners group
     var owner = 'false';
     var user = $().SPServices.SPGetCurrentUser();
     var email = $().SPServices.SPGetCurrentUser({fieldName: "EMail", debug: false});
@@ -772,7 +826,7 @@ wvmmsurvey.sharepoint = {
       async: false,  
       completefunc: function(xData, Status) { 
         $(xData.responseXML).find('Group').each(function() {
-          if ($(this).attr('Name') == 'SandBox Owners') { owner = 'true'; }
+          if ($(this).attr('Name') == 'Market Manager Survey Owners') { owner = 'true'; }
         });
       }
     });

@@ -11,19 +11,33 @@
     <link rel="stylesheet" href="../lib/css/anytime.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
     <script src="../lib/js/jquery-1.8.2.js"></script>
-    <script src="../lib/js/dtc.js"></script>
     <script src="../lib/js/chosen.jquery.js"></script>
+    <?php echo '<script src="../lib/js/dtc.js?' . time() . '"></script>'; ?>
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
         wvmmsurvey.make.select('all','region');
+        wvmmsurvey.make.selectMonth();
+        $('#dropdownMonth').change(function () { 
+          wvmmsurvey.make.select('all','region'); 
+          $('input:radio[name="filter"][value="region"]').attr('checked', 'checked');
+          if ($('#dropdownMonth option:selected').text() == '<?php echo date("F Y"); ?>') {
+            $('.edittext').empty();
+            $("<span>Edit</span>").appendTo('.edittext');
+            $(".editimg").attr("src","img/editsmall.jpg");
+          } else {
+            $('.edittext').empty();
+            $("<span>View</span>").appendTo('.edittext');
+            $(".editimg").attr("src","img/viewsmall.jpg");
+          }
+        }); 
       });
       function showCompletion() {
         // Parse the store elements on the page and show the completion percentage for each
         alert('Your window may hang while the completion percentages load, please wait ....');
         $('.store').each(function() {
           var store = $(this).text().split(' ')[0];
-          var percent = wvmmsurvey.make.compPercent(store,'current');
+          var percent = wvmmsurvey.make.compPercent(store,$('#dropdownMonth').val());
           var color = percent < 1 ? 'red' : percent == 100 ? 'green' : 'yellow';
           $(this).append(", "+percent+"%").addClass(color);
         });
@@ -39,7 +53,7 @@
         <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
         <div class="headerright"><img id="printButton" src="" style="display: none;"></img></div>
       </div>      
-      <div class="survey-heading">Month: <? echo date('F Y'); ?></div>
+      <div id="selectMonth" class="survey-heading"><!-- Dynamically populated --></div>
       <hr>
       <div class="columns-two">
         <div class="column-two">

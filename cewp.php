@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="format-detection" content="telephone=no">
     <title>Wireless Vision Market Manager Survey</title>
-    <script src="http://wvmmsurvey.buzzspace.datatechcafe.com/lib/js/jquery-1.8.2.js"></script>
-    <script src="http://wvmmsurvey.buzzspace.datatechcafe.com/lib/js/jquery.SPServices-2013.01.min.js"></script>
-    <?php echo '<script src="http://wvmmsurvey.buzzspace.datatechcafe.com/wvmmsurvey.js?' . time() . '"></script>'; ?>
+    <script src="http://buzzspace.datatechcafe.com/lib/js/jquery-1.8.2.js"></script>
+    <script src="http://buzzspace.datatechcafe.com/lib/js/jquery.SPServices-2013.01.min.js"></script>
+    <?php echo '<script src="http://buzzspace.datatechcafe.com/wvmmsurvey/wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.sharepoint.pass('auth','http://wvmmsurvey.buzzspace.datatechcafe.com/post.php',wvmmsurvey.sharepoint.isAdmin());
+        wvmmsurvey.sharepoint.pass('auth','http://buzzspace.datatechcafe.com/wvmmsurvey/post.php',wvmmsurvey.sharepoint.isAdmin());
         $('#iframe').width($(window).width()-350);
         $(window).resize(function() { 
           $('#iframe').width($(window).width()-350); 

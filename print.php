@@ -11,8 +11,8 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.make.edit(<?php echo $_GET['suid']; ?>);
-        wvmmsurvey.make.print(<?php echo $_GET['suid']; ?>);
+        wvmmsurvey.make.edit(<?php echo $_GET['muid']; ?>,<?php echo $_GET['store']; ?>);
+        wvmmsurvey.make.print(<?php echo $_GET['muid']; ?>,<?php echo $_GET['suid']; ?>);
         $(':input').prop('disabled', true);
         window.print();
       });
@@ -28,25 +28,23 @@
         <hr>
         <table style="padding-left: 10px;">
           <tr>
-            <td class="survey-question" style="padding-left: 0px;"><div id="storeVisited"><!-- Dynamically populated --></div></td>
+            <td class="survey-question" style="padding-left: 0px;">Store:</td>
             <td class="survey-question">Surveyor:</td>
-            <td class="survey-question">Visit Date:</td>
             <td class="survey-question">Last Saved:</td>
           </tr>
           <tr>
-            <td></td>
-            <td class="survey-question">
-              <div id="surveyor"><!-- Dynamically populated --></div>
+            <td class="survey-question" style="padding-left: 0px;">
+              <div id="storeVisited"><!-- Dynamically populated --></div>
             </td>
             <td class="survey-question">
-              <div id="createdDate"><!-- Dynamically populated --></div>
+              <div id="surveyor"><!-- Dynamically populated --></div>
             </td>
             <td class="survey-question">
               <div id="modifiedDate"><!-- Dynamically populated --></div>
             </td>
           </tr>
         </table>
-        <br><div class="survey-heading">Rating Information</div>
+        <br><div class="survey-heading">Store Rating</div>
         <hr>
         <div id="ratingDiv"><!-- Dynamically populated --></div>
       </div>
