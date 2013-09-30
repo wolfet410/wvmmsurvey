@@ -24,7 +24,7 @@
     <div>
       <div class="header">
         <div class="headerleft"><img id="saveStatus" src="" style="display: none;"></img></div>
-        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+        <div class="headercenter"><h1>Market Manager Survey</h1></div>
       </div>
       <div id="staticContent">
         <p>Choose the month and year to copy to:</p>

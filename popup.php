@@ -48,7 +48,7 @@
     <div>
       <div class="header">
         <div class="headerleft"><img id="saveStatus" src="" style="display: none;"></img></div>
-        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+        <div class="headercenter"><h1>Market Manager Survey</h1></div>
       </div>
       <div id="staticContent">
         <div class="survey-heading">Survey Information</div>

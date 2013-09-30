@@ -64,7 +64,7 @@
     <div>
       <div class="header">
         <div class="headerleft"><img id="saveStatus" src=""></img></div>
-        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
+        <div class="headercenter"><h1>Market Manager Survey</h1></div>
         <div class="headerright"><a href="javascript:;" id="print"><img id="printButton" src="img/print.png" alt="Print Survey" title="Print Survey" border=0></img></a></div>
       </div>
       <div id="staticContent">

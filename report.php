@@ -9,12 +9,15 @@
     <link rel="stylesheet" href="../lib/css/chosen.css">
     <link rel="stylesheet" href="../lib/css/anytime.css">
     <link rel="stylesheet" href="../lib/css/messi.css">
+    <link rel="stylesheet" href="../lib/css/columns.css">
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
     <script src="../lib/js/jquery-1.8.2.js"></script>
     <script src="../lib/js/jquery.csv-0.71.min.js"></script>
     <script src="../lib/js/chosen.jquery.min.js"></script>
     <script src="../lib/js/anytime.js"></script>
     <script src="../lib/js/messi.min.js"></script>
+    <script src="../lib/js/jquery-ui-1.10.3.custom.min.js"></script>
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
@@ -29,8 +32,7 @@
           async: false,
           dataType: 'json',
           success: function(r) {
-            wvmmsurvey.make.select();
-            wvmmsurvey.make.create("http://wvmmsurvey.buzzspace.datatechcafe.com/phonelist/2013 - Wireless Vision Phone Directory.csv");
+            wvmmsurvey.make.csvSelection();
           },
           error: function(a,b,c) {
             alert(a+","+b+","+c);
@@ -44,35 +46,82 @@
     </script>
   </head>
   <body class="body">
-    <div>
-      <div class="header">
-        <div class="headerleft"><img id="saveStatus" src="" style="display: none;"></img></div>
-        <div class="headercenter"><h1>Market Manager Survey Tool</h1></div>
-        <div class="headerright"><img id="printButton" src="" style="display: none;"></img></div>
-      </div>
-      <div class="survey-heading">Reports</div>
-      <hr>
-      <p class="report-text">Select the appropriate Run Report button below</p>
-      <div class="survey-heading">CSV Export</div>
-      <hr>
-      <form id="formCsvBySurvey" target="_blank" action="http://wvmmsurvey.buzzspace.datatechcafe.com/wvmmsurvey.php" method="get">
-        <input type="hidden" name="report" value="csvBySurvey">
-        <p class="report-text">By Survey:</p>
-        <p><span id="selectSurvey" style="padding-left: 10px;padding-right: 10px;"><!-- Dynamically populated --></span>
-        <a href="#" class="large button wvorange" onclick="wvmmsurvey.report.csvBySurvey();"><img src="img/savereport.jpg" class="btnimg" style="display:none;"><span class="btntext">Save Report</span></a></p>
-      </form>
-      <hr style="border: 1px dashed grey;">
-      <p class="report-text">By Store:</p>
-      <p><span id="storeVisited" style="padding-left: 10px;padding-right: 10px;"><!-- Dynamically populated --></span>
-      <a href="#" class="large button wvorange"><img src="img/runreport.jpg" class="btnimg" style="display:none;"><span class="btntext">Run Report</span></a></p>
-      <hr style="border: 1px dashed grey;">
-      <p class="report-text">By Date Range:</p>
-      <p><a href="#" class="large button wvorange"><img src="img/runreport.jpg" class="btnimg" style="display:none;"><span class="btntext">Run Report</span></a></p>
-      <div class="survey-heading">Close</div>
-      <hr>
-      <p class="center">
-        <a href="index.php" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a>
-      </p>
+    <div class="header">
+      <div class="headercenter"><h1>Market Manager Survey</h1></div>
     </div>
+    <div class="survey-heading">CSV Export</div>
+    <hr>
+    <form id="formCsvBySurvey" target="_blank" action="http://wvmmsurvey.buzzspace.datatechcafe.com/wvmmsurvey.php" method="get">
+      <input type="hidden" name="report" value="csvBySurvey">
+      <div class="columns-three">
+        <div class="column-three">
+          <p>
+            <div class="survey-heading">From:<br></div>
+            <select>
+              <option>2013</option>
+              <option>2014</option>
+              <option>2015</option>
+              <option>2016</option>
+            </select>
+            <select>
+              <option>January</option>
+              <option>February</option>
+              <option>March</option>
+              <option>April</option>
+              <option>May</option>
+              <option>June</option>
+              <option>July</option>
+              <option>August</option>
+              <option>September</option>
+              <option>October</option>
+              <option>November</option>
+              <option>December</option>
+            </select>
+          </p>
+        </div>
+        <div class="column-three">
+          <p>
+            <div class="survey-heading">To:<br></div>
+            <select>
+              <option>2013</option>
+              <option>2014</option>
+              <option>2015</option>
+              <option>2016</option>
+            </select>
+            <select>
+              <option>January</option>
+              <option>February</option>
+              <option>March</option>
+              <option>April</option>
+              <option>May</option>
+              <option>June</option>
+              <option>July</option>
+              <option>August</option>
+              <option>September</option>
+              <option>October</option>
+              <option>November</option>
+              <option>December</option>
+            </select>
+          </p>
+        </div>
+        <div class="column-three">
+          <div id="accordion">
+            <h3>Region</h3>
+            <div id="accordionRegion"><!-- Dyanmically populated --></div>
+            <h3>Market</h3>
+            <div id="accordionMarket"><!-- Dyanmically populated --></div>
+            <h3>Store</h3>
+            <div id="accordionStore"><!-- Dyanmically populated --></div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <p class="center">
+      <a href="javascript:;" class="large button wvorange" onclick="wvmmsurvey.report.csvBySurvey();"><img src="img/savereport.jpg" class="btnimg" style="display:none;"><span class="btntext">Save Report</span></a>
+    </p>
+    <hr> <!-- Nice dashed line: style="border: 1px dashed grey;" -->
+    <p class="center">
+      <a href="index.php" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a>
+    </p>
   </body>
 </html>

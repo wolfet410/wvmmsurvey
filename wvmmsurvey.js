@@ -3,47 +3,6 @@
 var wvmmsurvey = window.wvmmsurvey || {};
 
 wvmmsurvey.make = {
-	create: function() {
-    // Builds lists of stores to select from
-    $.ajax({
-      url: "wvmmsurvey.php",
-      type: 'POST',
-      data: { 
-        todo: "makeCreateSurvey"
-      },
-      cache: false,
-      async: false,
-      dataType: 'json',
-      success: function(arr) {
-        arr.sort(function(a, b) {
-          // Number padding adapted from http://stackoverflow.com/a/4258793/1779382
-          var a1 = (new Array(5 + 1 - a['sap'].toString().length)).join('0') + a['sap'];
-          var b1 = (new Array(5 + 1 - b['sap'].toString().length)).join('0') + b['sap'];
-          if (a1 == b1) return 0;
-          return a1 > b1 ? 1 : -1;
-        });
-        var html = '<select id="store" name="store" class="chzn-select survey-textarea" data-placeholder="Select a store...">';
-        html += '<option value=""></option>';
-        $.each(arr, function(k,v){
-         if (v['sap'] !== '') {
-            html += '<option value="' + v['sap'] + '">' + v['sap'] + ' - '
-             + v['desc'] + ' (' + v['market'] + '/' + v['region'] + ')</option>';
-         } 
-        });
-        html += '</select>';
-        $('#storeVisited').empty();
-        $(html).appendTo('#storeVisited');
-        $(".chzn-select").chosen();
-        AnyTime.picker("visitDate",
-          { format: "%W, %M %d, %z", firstDOW: 1 } 
-        );
-        $("#visitTime").AnyTime_picker({
-          format: "%h:%i %p", labelTitle: "Hour",
-          labelHour: "Hour", labelMinute: "Minute"
-        });
-      }
-    });
-	},
   select: function(selection,column) {
     // Populate stores and maybe regions, and markets
     // selection is either 'all', or 'region=whatever', or 'market=whatever'
@@ -592,6 +551,53 @@ wvmmsurvey.make = {
       }
     });
   },
+  csvSelection: function() {
+    // Create the accordion div's for the CSV selection screen
+
+// USING THIS FUNCTION TO BUILD THE ACCORDION DIVS
+// WHICH WILL THEN BE USED TO CREATE THE CSV FILE
+
+
+    $.ajax({
+      url: "wvmmsurvey.php",
+      type: 'POST',
+      data: { 
+        todo: "makeCreateSurvey"
+      },
+      cache: false,
+      async: false,
+      dataType: 'json',
+      success: function(arr) {
+        var arrRegion = [];
+        var arrMarket = [];
+        var htmls = '';
+        $.each(arr, function(k,v) {
+          // Create separate arrays for each region and market to build those divs
+          $.inArray(v['region'], arrRegion) === -1 && arrRegion.push(v['region']);
+          $.inArray(v['market'], arrMarket) === -1 && arrMarket.push(v['market']);
+          htmls += '<label><input type="radio" name="group" value="'+ v['sap'] + '">' + v['sap'] + ' - ' + v['desc'] + '</label><br>';
+        });
+        arrRegion.sort();
+        arrMarket.sort();
+        var htmlr = '';
+        htmlr += '<label><input type="radio" name="group" value="all" checked="checked">All</label><br>';
+        $.each(arrRegion, function(k,v) {
+          htmlr += '<label><input type="radio" name="group" value="'+ v + '">' + v + '</label><br>';
+        });
+        var htmlm = '';
+        $.each(arrMarket, function(k,v) {
+          htmlm += '<label><input type="radio" name="group" value="'+ v + '">' + v + '</label><br>';
+        });
+        $('#accordionRegion').empty();
+        $(htmlr).appendTo('#accordionRegion');
+        $('#accordionMarket').empty();
+        $(htmlm).appendTo('#accordionMarket');
+        $('#accordionStore').empty();
+        $(htmls).appendTo('#accordionStore');
+        $('#accordion').accordion({ collapsible: true, heightStyle: "content", active: false });
+      }
+    });
+  },
   refresh: function(type,quid) {
     // Refresh the child window
     location.reload();
@@ -803,14 +809,15 @@ wvmmsurvey.act = {
 
 wvmmsurvey.report = {
   csvBySurvey: function() {
-    if ($('#surveyList').val() == '') {
-      new Messi('Please select a survey first!', {
-        title: 'Error',
-        buttons: [{id: 0, label: 'OK', val: ''}],
-      });
-    } else {
+    // Could check for date range first here
+    // if ($('#surveyList').val() == '') {
+    //   new Messi('Please select a survey first!', {
+    //     title: 'Error',
+    //     buttons: [{id: 0, label: 'OK', val: ''}],
+    //   });
+    // } else {
       $('#formCsvBySurvey').submit();
-    }
+    // }
   }
 }
 
