@@ -575,18 +575,18 @@ wvmmsurvey.make = {
           // Create separate arrays for each region and market to build those divs
           $.inArray(v['region'], arrRegion) === -1 && arrRegion.push(v['region']);
           $.inArray(v['market'], arrMarket) === -1 && arrMarket.push(v['market']);
-          htmls += '<label><input type="radio" name="group" value="'+ v['sap'] + '">' + v['sap'] + ' - ' + v['desc'] + '</label><br>';
+          htmls += '<label><input type="radio" name="group" value="sap,'+ v['sap'] + '">' + v['sap'] + ' - ' + v['desc'] + '</label><br>';
         });
         arrRegion.sort();
         arrMarket.sort();
         var htmlr = '';
-        htmlr += '<label><input type="radio" name="group" value="all" checked="checked">All</label><br>';
+        htmlr += '<label><input type="radio" name="group" value="region,all" checked="checked">All</label><br>';
         $.each(arrRegion, function(k,v) {
-          htmlr += '<label><input type="radio" name="group" value="'+ v + '">' + v + '</label><br>';
+          htmlr += '<label><input type="radio" name="group" value="region,'+ v + '">' + v + '</label><br>';
         });
         var htmlm = '';
         $.each(arrMarket, function(k,v) {
-          htmlm += '<label><input type="radio" name="group" value="'+ v + '">' + v + '</label><br>';
+          htmlm += '<label><input type="radio" name="group" value="market,'+ v + '">' + v + '</label><br>';
         });
         $('#accordionRegion').empty();
         $(htmlr).appendTo('#accordionRegion');

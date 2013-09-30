@@ -72,7 +72,7 @@
       </div>
       <div id="popupContent"><!-- Dynamically populated --></div>
       <div id="close">
-        <p class="center"><a href="#" class="large button wvorange" onclick="window.close();">Close</a></p>
+        <p class="center"><a href="javascript:;" class="large button wvorange" onclick="window.close();">Close</a></p>
       </div>
     </div>
   </body>

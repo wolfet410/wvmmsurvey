@@ -90,7 +90,10 @@
         </div>
       </div>
       <p class="center">
-        <a href="index.php" class="large button wvorange"><img src="img/cancel.jpg" class="btnimg" style="display:none;"><span class="btntext">Cancel</span></a>
+        <a href="https://wirelessvision.sharepoint.com/sales/mmsurvey/default.aspx" class="large button wvorange">
+          <img src="img/cancel.jpg" class="btnimg" style="display:none;">
+          <span class="btntext">Cancel</span>
+        </a>
       </p>
     </div>
   </body>

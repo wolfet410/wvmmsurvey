@@ -51,19 +51,19 @@
     </div>
     <div class="survey-heading">CSV Export</div>
     <hr>
-    <form id="formCsvBySurvey" target="_blank" action="http://wvmmsurvey.buzzspace.datatechcafe.com/wvmmsurvey.php" method="get">
+    <form id="formCsvBySurvey" target="_blank" action="wvmmsurvey.php" method="get">
       <input type="hidden" name="report" value="csvBySurvey">
       <div class="columns-three">
         <div class="column-three">
           <p>
             <div class="survey-heading">From:<br></div>
-            <select>
+            <select name="fromYear">
               <option>2013</option>
               <option>2014</option>
               <option>2015</option>
               <option>2016</option>
             </select>
-            <select>
+            <select name="fromMonth">
               <option>January</option>
               <option>February</option>
               <option>March</option>
@@ -82,13 +82,13 @@
         <div class="column-three">
           <p>
             <div class="survey-heading">To:<br></div>
-            <select>
+            <select name="toYear">
               <option>2013</option>
               <option>2014</option>
               <option>2015</option>
               <option>2016</option>
             </select>
-            <select>
+            <select name="toMonth">
               <option>January</option>
               <option>February</option>
               <option>March</option>
@@ -121,7 +121,7 @@
     </p>
     <hr> <!-- Nice dashed line: style="border: 1px dashed grey;" -->
     <p class="center">
-      <a href="index.php" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a>
+      <a href="https://wirelessvision.sharepoint.com/sales/mmsurvey/default.aspx" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a>
     </p>
   </body>
 </html>

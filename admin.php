@@ -116,7 +116,7 @@
           <img src="img/copysurvey.jpg" class="btnimg" style="display:none;"><span class="btntext">Copy Survey</span>
         </a>
         <br><p class="center">
-          <a href="/cewp.php" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a>
+          <a href="https://wirelessvision.sharepoint.com/sales/mmsurvey/default.aspx" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a>
         </p>
       </form>
     </div>

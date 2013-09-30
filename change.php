@@ -63,7 +63,7 @@
         <!-- Dynamically populated -->
       </div>
       <div id="close">
-        <p class="center"><a href="/" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a></p>
+        <p class="center"><a href="https://wirelessvision.sharepoint.com/sales/mmsurvey/default.aspx" class="large button wvorange"><img src="img/close.jpg" class="btnimg" style="display:none;"><span class="btntext">Close</span></a></p>
       </div>
     </div>
   </body>

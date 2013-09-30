@@ -385,20 +385,36 @@ function maxRatingValue($quid) {
 
 function csvBySurvey() {
   // CSV generation adapted from http://stackoverflow.com/a/12333533/1779382
+  $group = explode(",",$_GET['group']);
+  $type = $group[0];
+  $data = $group[1];
+  $fromMonth = $_GET['fromMonth'];
+  $toMonth = $_GET['toMonth'];
+  $fromYear = $_GET['fromYear'];
+  $toYear = $_GET['toYear'];
 
+  // Build $sapList, comma separated list of SAPs based off of $type and $data
+  $storesWhere = $data == "all" ? "" : "WHERE $type = '$data'";
+  $q = "SELECT sap FROM Stores $storesWhere";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvBySurvey building sapList");
+  $sapList = "";
+  while ($sapArr = mysql_fetch_assoc($r)) {
+    $sapList .= "," . $sapArr['sap'];
+  }
+  $sapList = ltrim($sapList,',');
 
-// UPDATE THIS TO QUERY FOR WHATEVER DATA THE USER SELECTED!!!  CAN'T USE SUID HERE!!
-
+  $where = "SAP IN ($sapList) AND STR_TO_DATE(month,'%M %Y') >= STR_TO_DATE('$fromMonth $fromYear','%M %Y') AND "
+         . "STR_TO_DATE(month,'%M %Y') <= STR_TO_DATE('$toMonth $toYear','%M %Y')";
   $ans = array(array('SAP','Store','Rating','Question Text','Button Response','Notes Text','Text Response','Respond Date/Time'));
-  $suid = safe($_GET['surveyList']);
-  $q = "SELECT sap,store,rating,maxrating,qtext,radio,notestext,textarea,response FROM Output WHERE suid = $suid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data");
+  $q = "SELECT sap,store,rating,maxrating,qtext,radio,notestext,textarea,response FROM Output WHERE $where";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data:" . mysql_error());
+  $ratingTotal = $ratingMaximum = 0;
   while ($a = mysql_fetch_assoc($r)) {
     $ans[] = array($a['sap'],$a['store'],$a['rating'],$a['qtext'],$a['notestext'],$a['radio'],$a['textarea'],$a['response']);
     $ratingTotal += $a['rating'];
     $ratingMaximum += $a['maxrating'];
   }
-  $ratingAverage = $ratingTotal / $ratingMaximum;
+  $ratingAverage = $ratingMaximum > 0 ? $ratingTotal / $ratingMaximum : 0;
   $ans[] = array("Average Rating: ",intval($ratingAverage*100)."%");
 
   header("Pragma: public");
