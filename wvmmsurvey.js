@@ -263,25 +263,25 @@ wvmmsurvey.make = {
           });
         }
       });
+      // Update overall rating
+      $.ajax({
+        url: "wvmmsurvey.php", 
+        type: 'POST',
+        data: { 
+          todo: "makeStoreRating",
+          muid: muid,
+          suid: suid
+        },
+        cache: false,
+        async: false,
+        success: function(r) {
+          html = '<span style="font-size:2em;font-weight:bold;">'+(r*100).toFixed(0)+'%</span>';
+          $('#ratingDiv').empty();
+          $(html).appendTo('#ratingDiv');
+        },
+        error: function(a,b,c) { alert(a,b,c); }
+      });
     }
-    // Update overall rating
-    $.ajax({
-      url: "wvmmsurvey.php", 
-      type: 'POST',
-      data: { 
-        todo: "makeStoreRating",
-        muid: muid,
-        suid: suid
-      },
-      cache: false,
-      async: false,
-      success: function(r) {
-        html = '<span style="font-size:2em;font-weight:bold;">'+(r*100).toFixed(0)+'%</span>';
-        $('#ratingDiv').empty();
-        $(html).appendTo('#ratingDiv');
-      },
-      error: function(a,b,c) { alert(a,b,c); }
-    });
   },
   print: function(muid,suid) {
     // Builds dynamic survey content div using Questions table
@@ -481,41 +481,41 @@ wvmmsurvey.make = {
                    + (typeof aa[0] != 'undefined' ? 
                       "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
                       + "onclick='$(\"#1roptS\").html(parseInt($(\"#1roptS\").html()) + 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&uarr;</a>" 
                       + "<span id='1roptS'>" + (typeof aa[0].split('~')[1] != 'undefined' ? aa[0].split('~')[1] : "0") + "</span>"
                       + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
                       + "onclick='$(\"#1roptS\").html(parseInt($(\"#1roptS\").html()) - 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&darr;</a></td>"
                       : "</td>")
                    + "<td class='ratingtext'>"
                    + (typeof aa[1] != 'undefined' ? 
                       "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
                       + "onclick='$(\"#2roptS\").html(parseInt($(\"#2roptS\").html()) + 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&uarr;</a>" 
                       + "<span id='2roptS'>" + (typeof aa[1].split('~')[1] != 'undefined' ? aa[1].split('~')[1] : "0") + "</span>"
                       + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
                       + "onclick='$(\"#2roptS\").html(parseInt($(\"#2roptS\").html()) - 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&darr;</a></td>"
                       : "</td>")
                    + "<td class='ratingtext'>"
                    + (typeof aa[2] != 'undefined' ? 
                       "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
                       + "onclick='$(\"#3roptS\").html(parseInt($(\"#3roptS\").html()) + 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&uarr;</a>" 
                       + "<span id='3roptS'>" + (typeof aa[2].split('~')[1] != 'undefined' ? aa[2].split('~')[1] : "0") + "</span>"
                       + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
                       + "onclick='$(\"#3roptS\").html(parseInt($(\"#3roptS\").html()) - 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&darr;</a></td>"
                       : "</td>")
                    + "<td class='ratingtext'>"
                    + (typeof aa[3] != 'undefined' ? 
                       "Rating: <a href='javascript:;' class='row-controls' title='Increase rating' "
                       + "onclick='$(\"#4roptS\").html(parseInt($(\"#4roptS\").html()) + 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&uarr;</a>" 
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&uarr;</a>" 
                       + "<span id='4roptS'>" + (typeof aa[3].split('~')[1] != 'undefined' ? aa[3].split('~')[1] : "0") + "</span>"
                       + "<a href='javascript:;' class='row-controls' title='Decrease rating' "
                       + "onclick='$(\"#4roptS\").html(parseInt($(\"#4roptS\").html()) - 1);"
-                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");wvmmsurvey.make.refresh(\"desc\","+val['quid']+");'>&darr;</a></td>"
+                      + "wvmmsurvey.act.popupWork(\"rated"+val['quid']+"\");opener.tempForm($(\"#muid\").val());'>&darr;</a></td>"
                       : "</td>")
                    + "</tr></table>"
                    + "<hr style='border: 1px dashed grey;'>Notes?<label><input type='radio' name='notes" + val['quid'] + "' id='notes" + val['quid'] + "' value='true'"

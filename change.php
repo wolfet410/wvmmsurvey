@@ -23,6 +23,16 @@
         (!$.support.opacity) && $('.btntext').css('display','none');
         (!$.support.opacity) && $('a').removeClass('large button wvorange');
       });
+      function tempForm(muid) {
+        // A temp form to hold original muid
+        // Adapted from: http://www.webdeveloper.com/forum/showthread.php?54961-submit-form-data-to-parent-window
+        var form = $(document.createElement('form'))
+            .attr({'method': 'post', 'action': 'change.php', 'target': '_self'});
+        $(document.createElement('input'))
+          .attr({'type': 'hidden', 'name': 'editableSurveys', 'value': muid})
+          .appendTo(form);
+        form.appendTo(document.body).submit(); 
+      }
     </script>
   </head>
   <body class="body">
@@ -40,24 +50,24 @@
         <hr>
         <table style="padding-left: 10px;">
           <tr>
-            <td class="survey-question" style="padding-left: 0px;">SAP Number: nnn</div></td>
+            <td class="survey-question" style="padding-left: 0px;">Store:</div></td>
             <td class="survey-question">Surveyor:</td>
-            <td class="survey-question">Visit Date:</td>
             <td class="survey-question">Last Saved:</td>
           </tr>
           <tr>
-            <td></td>
+            <td class="survey-question">nnn - Store Description</td>
             <td class="survey-question">
               <div>user@wirelessvision.com</div>
             </td>
             <td class="survey-question">
               <div>mm/dd/yyyy hh:mm:ss</div>
             </td>
-            <td class="survey-question">
-              <div>mm/dd/yyyy hh:mm:ss</div>
-            </td>
           </tr>
         </table>
+        <br><br><div class="survey-heading">Store Rating</div>
+        <hr>
+        <div style="font-size:2em;font-weight:bold;">0%</div>
+        <br><br>
       </div>
       <div id="dynamicContent">
         <!-- Dynamically populated -->

@@ -20,7 +20,10 @@
             case 'text':
               $('#'+this.id).change (function () { 
                 wvmmsurvey.act.popupWork(this.id);
-                wvmmsurvey.make.refresh('desc',this.id.match(/[0-9]+/g).toString());
+                // wvmmsurvey.make.refresh('desc',this.id.match(/[0-9]+/g).toString());
+                opener.tempForm(<?php echo $_GET['muid']; ?>);
+                // Refresh the child window
+                location.reload();
               });              
               break;
             case 'radio':
@@ -34,7 +37,9 @@
                     }
                   }
                   wvmmsurvey.act.popupWork(this.name);
-                  wvmmsurvey.make.refresh('desc',this.name.match(/[0-9]+/g).toString());
+                  opener.tempForm(<?php echo $_GET['muid']; ?>);
+                  // Refresh the child window
+                  location.reload();
                 });
                 radios.push(this.name);
               }
