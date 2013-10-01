@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../lib/css/anytime.css">
     <link rel="stylesheet" href="../lib/css/messi.css">
     <link rel="stylesheet" href="../lib/css/columns.css">
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="../lib/css/jquery-ui-1.10.3.smoothness.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
     <script src="../lib/js/jquery-1.8.2.js"></script>
     <script src="../lib/js/jquery.csv-0.71.min.js"></script>

@@ -56,10 +56,10 @@
       <div class="header">
         <div class="headercenter"><h1>Market Manager Survey</h1></div>
       </div>
-      <p class="center"><a id="btnEditSurvey" href="javascript:;" class="large button wvorange"><img src="img/editsurvey.jpg" class="btnimg" style="display:none;"><span class="btntext">Edit Survey</span></a></p>
+      <p class="center"><a id="btnEditSurvey" href="javascript:;" class="large button wvorange"><img src="img/surveys.png" class="btnimg" style="display:none;"><span class="btntext">Edit Survey</span></a></p>
+      <p class="center"><a href="report.php" class="large button wvorange"><img src="img/reports.jpg" class="btnimg" style="display:none;"><span class="btntext">Reports</span></a></p>
       <div id="admin" style="display:none;">
         <p class="center"><a href="admin.php" class="large button wvorange"><img src="img/administersurveys.jpg" class="btnimg" style="display:none;"><span class="btntext">Administer Surveys</span></a></p>
-        <p class="center"><a href="report.php" class="large button wvorange"><img src="img/reports.jpg" class="btnimg" style="display:none;"><span class="btntext">Reports</span></a></p>
       </div>
     </div>
   </body>
