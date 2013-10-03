@@ -1,8 +1,6 @@
 <?php
-session_start();
-header('Cache-control: private');
-
 // DTC specific includes
+session_start();
 require "/var/www/constants-wv.inc";
 require "/var/www/lib/php/library.php";
 
@@ -82,7 +80,7 @@ function makeEditSurvey() {
     echo json_encode($s);
   } else {
     // Survey doesn't exist, create it
-    $q = "INSERT INTO Surveys (email,store,muid) VALUES ('".$_SESSION['email']."','$store','$muid')";
+    $q = "INSERT INTO Surveys (email,store,muid) VALUES ('".$_POST['email']."','$store','$muid')";
     $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeEditSurvey creating survey");
     $suid = mysql_insert_id();
     // Getting the data from the database instead of building JSON by hand to get correct systemLastModified

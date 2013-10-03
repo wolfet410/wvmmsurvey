@@ -17,7 +17,7 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.make.edit(<?php echo $_GET['muid']; ?>,<?php echo $_GET['store']; ?>);
+        wvmmsurvey.make.edit('<?php echo $_GET['email']; ?>',<?php echo $_GET['muid']; ?>,<?php echo $_GET['store']; ?>);
         wvmmsurvey.make.questions(<?php echo $_GET['muid']; ?>,$('#suid').val());
         var altText = "Last Saved: " + $('#modifiedDate').text();
         $('#saveStatus').attr({'src':"img/saved.png",'alt':altText,'title':altText});

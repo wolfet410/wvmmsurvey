@@ -43,9 +43,9 @@ wvmmsurvey.make = {
           // Works fine in Safari and most other mobile web browsers, though
           htmlDynamicStore += '<tr><td><a href="javascript:;" class="small button wvorange" style="width:40px;"'
                            + ' onclick="var sap=$(this).parent().next().text().split(\' \')[0]; '
-                           + 'var m=$(\'#dropdownMonth\').val();'
-                           + 'window.open(\'edit.php?muid=\'+m+\'&store=\'+sap,\'_self\');"'
-                           + '><img src="img/editsmall.jpg" class="btnimg editimg" style="display:none;">'
+                           + 'var m=$(\'#dropdownMonth\').val(); var e=$(\'#email\').val();'
+                           + 'window.open(\'edit.php?email=\'+e+\'&muid=\'+m+\'&store=\'+sap,\'_self\');"'
+                           + '><img src="img/editsmall.png" class="btnimg editimg" style="display:none;">'
                            + '<span class="btntext edittext">Edit</span></a></td>'
                            + '<td class="survey-question store" style="font-weight:normal;">' + v['sap'] + ' - ' + v['desc'] + '</td></tr>';
         });
@@ -139,7 +139,7 @@ wvmmsurvey.make = {
     });
     return comp;
   },
-  edit: function(muid,store) {
+  edit: function(email,muid,store) {
     // Gets and displays the sap & time stamp info for the survey being edited
     var storeHtml = '';
     var surveyInfoHtml = '';
@@ -150,6 +150,7 @@ wvmmsurvey.make = {
       type: 'POST',
       data: { 
         todo: "makeEditSurvey",
+        email: email,
         store: store,
         muid: muid
       },

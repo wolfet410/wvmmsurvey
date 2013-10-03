@@ -2,8 +2,8 @@
 <html>
   <head>
     <?php 
-      session_start();
       require "/var/www/lib/php/library.php";
+      session_start();
       $_SESSION['admin'] = $_POST['admin'];
       $_SESSION['email'] = $_POST['email'];
     ?>
@@ -46,7 +46,7 @@
         var blank = noscroll ? '_blank' : '_self';
         var specs = noscroll ? 'location=no,menubar=no,status=no,toolbar=no' : '';
         $('#btnEditSurvey').click(function () {
-          window.open('select.php',blank,specs);
+          window.open('select.php?email=<?php echo $_SESSION["email"]; ?>',blank,specs);
         });
       });
     </script>
@@ -57,9 +57,9 @@
         <div class="headercenter"><h1>Market Manager Survey</h1></div>
       </div>
       <p class="center"><a id="btnEditSurvey" href="javascript:;" class="large button wvorange"><img src="img/surveys.png" class="btnimg" style="display:none;"><span class="btntext">Edit Survey</span></a></p>
-      <p class="center"><a href="report.php" class="large button wvorange"><img src="img/reports.jpg" class="btnimg" style="display:none;"><span class="btntext">Reports</span></a></p>
+      <p class="center"><a href="report.php" class="large button wvorange"><img src="img/reports.png" class="btnimg" style="display:none;"><span class="btntext">Reports</span></a></p>
       <div id="admin" style="display:none;">
-        <p class="center"><a href="admin.php" class="large button wvorange"><img src="img/administersurveys.jpg" class="btnimg" style="display:none;"><span class="btntext">Administer Surveys</span></a></p>
+        <p class="center"><a href="admin.php" class="large button wvorange"><img src="img/administersurveys.png" class="btnimg" style="display:none;"><span class="btntext">Administer Surveys</span></a></p>
       </div>
     </div>
   </body>

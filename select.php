@@ -24,13 +24,13 @@
           if ($('#dropdownMonth option:selected').text() == '<?php echo date("F Y"); ?>') {
             $('.edittext').empty();
             $("<span>Edit</span>").appendTo('.edittext');
-            $(".editimg").attr("src","img/editsmall.jpg");
+            $(".editimg").attr("src","img/editsmall.png");
           } else {
             $('.edittext').empty();
             $("<span>View</span>").appendTo('.edittext');
-            $(".editimg").attr("src","img/viewsmall.jpg");
+            $(".editimg").attr("src","img/viewsmall.png");
           }
-        }); 
+        });
       });
       function showCompletion() {
         // Parse the store elements on the page and show the completion percentage for each
@@ -47,6 +47,8 @@
     </script>
   </head>
   <body class="body">
+    <!-- Forced to use a hidden here becacuse IE was having problems using PHP session variables to pass the data! -->
+    <input type="hidden" id="email" value="<?php echo $_GET['email']; ?>">
     <div>
       <div class="header">
         <div class="headerleft"><img id="saveStatus" src="" style="display: none;"></img></div>
