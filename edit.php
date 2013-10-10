@@ -56,7 +56,7 @@
         // Print button
         var popupOptions = 'height=600,width=800,directories=no,location=no,menubar=no,status=no,'
                  + 'titlebar=no,toolbar=no,resizable=yes,scrollbars=yes';
-        $('#print').click(function () { window.open('print.php?muid=<?php echo $_GET["muid"]; ?>&store=<?php echo $_GET["store"]; ?>&suid='+$('#suid').val(),'_blank',popupOptions); });
+        $('#print').click(function () { window.open('print.php?email=<?php echo $_GET['email']; ?>&muid=<?php echo $_GET['muid']; ?>&store=<?php echo $_GET['store']; ?>&suid='+$('#suid').val(),'_blank',popupOptions); });
       });
     </script>
   </head>

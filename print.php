@@ -11,7 +11,7 @@
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
-        wvmmsurvey.make.edit(<?php echo $_GET['muid']; ?>,<?php echo $_GET['store']; ?>);
+        wvmmsurvey.make.edit('<?php echo $_GET['email']; ?>',<?php echo $_GET['muid']; ?>,<?php echo $_GET['store']; ?>);
         wvmmsurvey.make.print(<?php echo $_GET['muid']; ?>,<?php echo $_GET['suid']; ?>);
         $(':input').prop('disabled', true);
         window.print();
