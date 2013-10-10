@@ -327,7 +327,7 @@ function updateOutput() {
             $response = mysql_result($rt,0,1);
             $qu = "INSERT INTO  Output (muid,suid,quid,sap,store,month,email,qtext,textarea,response) "
                 . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','$storedesc','$month','"
-                . $survey['email']."','$qtext','$textarea','$response')";
+                . $survey['email']."','".mysql_real_escape_string($qtext)."','".mysql_real_escape_string($textarea)."','".mysql_real_escape_string($response)."')";
             $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
           }
           break;
@@ -355,7 +355,8 @@ function updateOutput() {
           if ($textarea != '' || $radio != '') {
             $qu = "INSERT INTO Output (muid,suid,quid,sap,store,month,email,rating,maxrating,qtext,notestext,radio,textarea,response) "
                 . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','$storedesc','$month','"
-                . $survey['email']."','$rating','$max','$qtext','$notestext','$radio','$textarea','$response')";
+                . $survey['email']."','$rating','$max','".mysql_real_escape_string($qtext)."','".mysql_real_escape_string($notestext)."','$radio','"
+                . mysql_real_escape_string($textarea)."','".mysql_real_escape_string($response)."')";
             $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
           }
           break;
