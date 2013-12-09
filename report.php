@@ -52,7 +52,6 @@
     <div class="survey-heading">CSV Export</div>
     <hr>
     <form id="formCsvBySurvey" target="_blank" action="wvmmsurvey.php" method="get">
-      <input type="hidden" name="report" value="csvBySurvey">
       <div class="columns-three">
         <div class="column-three">
           <p>
@@ -78,8 +77,6 @@
               <option>December</option>
             </select>
           </p>
-        </div>
-        <div class="column-three">
           <p>
             <div class="survey-heading">To:<br></div>
             <select name="toYear">
@@ -105,6 +102,16 @@
           </p>
         </div>
         <div class="column-three">
+          <p>
+            <div class="survey-heading">Report:<br></div>
+            <select name="report">
+              <option value="csvBySurvey">All Answers</option>
+              <option value="csvCompPerc">Completion Percentage</option>
+              <option value="csvRatings">Store Ratings</option>
+            </select>
+          </p>
+        </div>
+        <div class="column-three">
           <div id="accordion">
             <h3>Region</h3>
             <div id="accordionRegion"><!-- Dyanmically populated --></div>
@@ -113,6 +120,7 @@
             <h3>Store</h3>
             <div id="accordionStore"><!-- Dyanmically populated --></div>
           </div>
+          <br>
         </div>
       </div>
     </form>

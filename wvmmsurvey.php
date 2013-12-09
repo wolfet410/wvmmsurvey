@@ -34,8 +34,7 @@ function createSurvey() {
 }
 
 function makeCreateSurvey() {
-  // Gets list of stores
-  // SHOULDN'T BE NEEDED ANYMORE
+  // Gets list of stores for Reports page
   echo fnQueryJSON("*","Stores");
 }
 
@@ -121,9 +120,10 @@ function makeGetAnswers() {
   if (isset($s)) { echo json_encode($s); } else { echo 0; }
 }
 
-function makeCompPercent() {
-  $store = safe($_POST['store']);
-  $muid = safe($_POST['muid']);
+function makeCompPercent($store='post',$muid='post',$return='no') {
+  // If no parameteres were passed, get them from post
+  $store = $store == 'post' ? safe($_POST['store']) : $store;
+  $muid = $muid == 'post' ? safe($_POST['muid']) : $muid;
   if ($muid == 'current') {
     // If $muid = 'current' then we need to find the real muid for the current month
     $q = "SELECT muid FROM Months WHERE datedesc = '" . date("Y-m") . "-01'";
@@ -132,11 +132,11 @@ function makeCompPercent() {
   }
   $q = "SELECT suid FROM Surveys WHERE store = '$store' AND muid = '$muid'";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting suid");
-  if (mysql_num_rows($r) == 0) { echo 0; die; }
+  if (mysql_num_rows($r) == 0) { if ($return == 'no') { echo 0; } else { return 0; } die; }
   $suid = mysql_result($r, 0);
   $q = "SELECT quids FROM Months WHERE muid = '$muid'";
   $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting quids");
-  if (mysql_num_rows($r) == 0) { echo 0; die; }
+  if (mysql_num_rows($r) == 0) { if ($return == 'no') { echo 0; } else { return 0; } die; }
   $quids = mysql_result($r, 0);
   $arrQuids = explode(",", $quids);
   $quidTotal = $quidCount = 0;
@@ -144,7 +144,7 @@ function makeCompPercent() {
     // Work depending on question type
     $q = "SELECT type FROM Questions WHERE quid = '$quid'";
     $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: makeCompPercent getting type");
-    if (mysql_num_rows($r) == 0) { echo 0; die; }
+    if (mysql_num_rows($r) == 0) { if ($return == 'no') { echo 0; } else { return 0; } die; }
     $type = mysql_result($r, 0);
     if ($type == 'radio' || $type == 'textbox') {
       // Only care about radio or textbox types
@@ -155,7 +155,11 @@ function makeCompPercent() {
       (mysql_result($r, 0) > 0) && $quidCount++;
     }
   }
-  echo intval(($quidCount/$quidTotal)*100);
+  if ($return == 'no') {
+    echo intval(($quidCount/$quidTotal)*100);
+  } else {
+    return intval(($quidCount/$quidTotal)*100);
+  }
 }
 
 function actWriteResults() {
@@ -326,7 +330,7 @@ function updateOutput() {
             $textarea = mysql_result($rt,0);
             $response = mysql_result($rt,0,1);
             $qu = "INSERT INTO  Output (muid,suid,quid,sap,store,month,email,qtext,textarea,response) "
-                . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','$storedesc','$month','"
+                . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','".mysql_real_escape_string($storedesc)."','$month','"
                 . $survey['email']."','".mysql_real_escape_string($qtext)."','".mysql_real_escape_string($textarea)."','".mysql_real_escape_string($response)."')";
             $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
           }
@@ -430,6 +434,182 @@ function csvBySurvey() {
   fclose($fp);
 }
 
+function csvRatings() {
+  // CSV generation adapted from http://stackoverflow.com/a/12333533/1779382
+  $group = explode(",",$_GET['group']);
+  $type = $group[0];
+  $data = $group[1];
+  $fromMonth = $_GET['fromMonth'];
+  $toMonth = $_GET['toMonth'];
+  $fromYear = $_GET['fromYear'];
+  $toYear = $_GET['toYear'];
+  // $months will contain a list of all of the months we are reporting against
+  $months = array();
+  // Create $ans array populated with report data
+  $ans = array(array("Store Ratings"));
+  $ans[] = array("Date Range:",$fromMonth." ".$fromYear,$toMonth." ".$toYear);
+  $ans[] = array('--------------');
+  $columns = array();
+  $columns[] = "Region";
+  $columns[] = "Market";
+  $columns[] = "SAP";
+  $columns[] = "Store Name";
+  // Create a new column for every month between the From and To range selected
+  // Adapted from: http://phphelp.co/2012/03/28/how-to-print-all-the-months-and-years-between-two-dates-in-php/
+  $time1 = strtotime($fromMonth."-".$fromYear);
+  $time2 = strtotime($toMonth."-".$toYear);
+  $columns[] = date('F Y', $time1);
+  $months[] = date('F Y', $time1);
+  $to = date('mY', $time2);
+  while ($time1 < $time2) {
+    $time1 = strtotime(date('Y-m-d', $time1).' +1 month');
+    if(date('mY', $time1) != $to && ($time1 < $time2)) {
+      $columns[] = date('F Y', $time1);
+      $months[] = date('F Y', $time1);
+    }
+  }
+  $columns[] = date('F Y', $time2);
+  $months[] = date('F Y', $time2);
+  // Add the contents of the $columns array as one row to $ans array
+  $ans[] = $columns;
+  $storesWhere = $data == "all" ? "" : "WHERE $type = '$data'";
+  $q = "SELECT region,market,sap,`desc` FROM Stores $storesWhere ORDER BY region,market,sap";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvRatings building $sapArr");
+  while ($sapArr = mysql_fetch_array($r)) {
+    // For each SAP, for each $months, compute the average rating for that SAP and add it to $ans[]
+    $columns = array();
+    $columns[] = $sapArr['region'];
+    $columns[] = $sapArr['market'];
+    $columns[] = $sapArr['sap'];
+    $columns[] = $sapArr['desc'];
+    foreach($months as $month) {
+      $ratingTotal = $ratingMaximum = 0;
+      $where = "sap = '" . $sapArr['sap'] . "' AND month = '$month'";
+      $qs = "SELECT rating,maxrating FROM Output WHERE $where";
+      $rs = mysql_query($qs) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data:" . mysql_error());
+      while ($a = mysql_fetch_assoc($rs)) {
+        $ratingTotal += $a['rating'];
+        $ratingMaximum += $a['maxrating'];
+      }
+      $ratingAverage = $ratingMaximum > 0 ? $ratingTotal / $ratingMaximum : 'N/A';
+      $columns[] = $ratingAverage == 'N/A' ? $ratingAverage : intval($ratingAverage*100)."%";
+    }
+    $ans[] = $columns;
+  }
+  // Subtotal averages
+  switch ($type) {
+    case "sap":
+      $triggerCols = array("2");
+      break;
+    case "market":
+      $triggerCols = array("1");
+      break;
+    case "region":
+      $triggerCols = $data == "all" ? array("0","1") : array("1");
+      break;
+  }
+  $totalCols = range(4,3+count($months));
+  $ans = arraySubAvg($ans,$triggerCols,$totalCols,4);
+  // Create CSV file output
+  header("Pragma: public");
+  header("Expires: 0");
+  header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+  header('Content-type: text/csv');
+  header("Content-Disposition: attachment;filename=file.csv");
+  header("Content-Transfer-Encoding: binary");
+  $fp = fopen('php://output', 'a');
+  foreach ($ans as $fields) {
+      fputcsv($fp, $fields);
+  }
+  fclose($fp);
+}
+
+function csvCompPerc() {
+  // CSV generation adapted from http://stackoverflow.com/a/12333533/1779382
+  $group = explode(",",$_GET['group']);
+  $type = $group[0];
+  $data = $group[1];
+  $fromMonth = $_GET['fromMonth'];
+  $toMonth = $_GET['toMonth'];
+  $fromYear = $_GET['fromYear'];
+  $toYear = $_GET['toYear'];
+  // $months will contain a list of all of the months we are reporting against
+  $months = array();
+  // Create $ans array populated with report data
+  $ans = array(array("Completion Percetage"));
+  $ans[] = array("Date Range:",$fromMonth." ".$fromYear,$toMonth." ".$toYear);
+  $ans[] = array('--------------');
+  $columns = array();
+  $columns[] = "Region";
+  $columns[] = "Market";
+  $columns[] = "SAP";
+  $columns[] = "Store Name";
+  // Create a new column for every month between the From and To range selected
+  // Adapted from: http://phphelp.co/2012/03/28/how-to-print-all-the-months-and-years-between-two-dates-in-php/
+  $time1 = strtotime($fromMonth."-".$fromYear);
+  $time2 = strtotime($toMonth."-".$toYear);
+  $columns[] = date('F Y', $time1);
+  $months[] = date('F Y', $time1);
+  $to = date('mY', $time2);
+  while ($time1 < $time2) {
+    $time1 = strtotime(date('Y-m-d', $time1).' +1 month');
+    if(date('mY', $time1) != $to && ($time1 < $time2)) {
+      $columns[] = date('F Y', $time1);
+      $months[] = date('F Y', $time1);
+    }
+  }
+  $columns[] = date('F Y', $time2);
+  $months[] = date('F Y', $time2);
+  // Add the contents of the $columns array as one row to $ans array
+  $ans[] = $columns;
+  $storesWhere = $data == "all" ? "" : "WHERE $type = '$data'";
+  $q = "SELECT region,market,sap,`desc` FROM Stores $storesWhere ORDER BY region,market,sap";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: csvCompPerc building $sapArr");
+  while ($sapArr = mysql_fetch_array($r)) {
+    // For each SAP, for each $months, check the comp % and add it to $ans[]
+    $columns = array();
+    $columns[] = $sapArr['region'];
+    $columns[] = $sapArr['market'];
+    $columns[] = $sapArr['sap'];
+    $columns[] = $sapArr['desc'];
+    foreach($months as $month) {
+      $t = strtotime($month);
+      $qm = "SELECT muid FROM Months WHERE datedesc='".date('Y-m-d', $t)."'";
+      $rm = mysql_query($qm) or fnErrorDie("WVMMSURVEY: csvCompPerc getting muid");
+      $muid = mysql_num_rows($rm) > 0 ? mysql_result($rm,0) : 'none';
+      $columns[] = makeCompPercent($sapArr['sap'],$muid,'yes')."%";
+    }
+    $ans[] = $columns;
+  }
+  // Subtotal averages
+  switch ($type) {
+    case "sap":
+      $triggerCols = array("2");
+      break;
+    case "market":
+      $triggerCols = array("1");
+      break;
+    case "region":
+      $triggerCols = $data == "all" ? array("0","1") : array("1");
+      break;
+  }
+  $totalCols = range(4,3+count($months));
+  $ans = arraySubAvg($ans,$triggerCols,$totalCols,4);
+  // Create CSV file
+  header("Pragma: public");
+  header("Expires: 0");
+  header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+  header('Content-type: text/csv');
+  header("Content-Disposition: attachment;filename=file.csv");
+  header("Content-Transfer-Encoding: binary");
+
+  $fp = fopen('php://output', 'a');
+  foreach ($ans as $fields) {
+      fputcsv($fp, $fields);
+  }
+  fclose($fp);
+}
+
 function makeStoreRating() {
   // Returns the store rating
   $muid = isset($_POST['muid']) ? safe($_POST['muid']) : $muid;
@@ -475,4 +655,3 @@ function copySurvey($oldMuid='post',$newDateDesc='post') {
 }
 
 ?>
-

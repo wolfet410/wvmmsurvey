@@ -596,7 +596,8 @@ wvmmsurvey.make = {
         $('#accordionStore').empty();
         $(htmls).appendTo('#accordionStore');
         $('#accordion').accordion({ collapsible: true, heightStyle: "content", active: false });
-      }
+      },
+      error: function(a,b,c) { alert("WVMMSURVEY: csvSelection error populating accordion"); }
     });
   },
   refresh: function(type,quid) {
