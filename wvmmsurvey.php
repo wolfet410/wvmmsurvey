@@ -301,72 +301,74 @@ function rowSwap() {
 }
 
 function updateOutput() {
-  // Updates the output table with data from the results table
-  // Populate the output table with every survey, each question in the survey, the question text and notestext
-  // Then go through the output table and populate each answer
-  $q = "TRUNCATE TABLE Output";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: updateOutput problems truncating output");
-  $q = "SELECT suid,email,store,Surveys.muid,systemLastModified,Months.datedesc,Months.quids FROM Surveys "
-     . "INNER JOIN Months ON Months.muid = Surveys.muid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: updateOutput errors getting Surveys");
-  while ($survey = mysql_fetch_assoc($r)) {
-    $month =  date("F Y",strtotime($survey['datedesc']));
-    $qarray = explode(",",$survey['quids']);
-    foreach ($qarray as $v) {
-      $q2 = "SELECT type,text,notestext FROM Questions WHERE quid = '$v'";
-      $r2 = mysql_query($q2) or fnErrorDie("WVMMSURVEY: updateOutput errors getting quid text");
-      $type = mysql_result($r2,0);
-      $qtext = mysql_real_escape_string(mysql_result($r2,0,1));
-      $notestext = mysql_real_escape_string(mysql_result($r2,0,2));
-      switch ($type) {
-        case "textbox":
-          $qs = "SELECT `desc` FROM Stores WHERE sap = '".$survey['store']."'";
-          $qr = mysql_query($qs) or fnErrorDie("WVMMSURVEY: updateOutput getting store desc");
-          $storedesc = mysql_result($qr, 0);
-          $qt = "SELECT textarea,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
-              . "AND suid = '".$survey['suid']."') AND quid = '$v' AND suid = '".$survey['suid']."' LIMIT 1";
-          $rt = mysql_query($qt) or fnErrorDie("WVMMSURVEY: updateOutput problems getting textarea");
-          if (mysql_num_rows($rt) > 0) {
-            $textarea = mysql_result($rt,0);
-            $response = mysql_result($rt,0,1);
-            $qu = "INSERT INTO  Output (muid,suid,quid,sap,store,month,email,qtext,textarea,response) "
-                . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','".mysql_real_escape_string($storedesc)."','$month','"
-                . $survey['email']."','".mysql_real_escape_string($qtext)."','".mysql_real_escape_string($textarea)."','".mysql_real_escape_string($response)."')";
-            $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
-          }
-          break;
-        case "radio":
-          $textarea = $radio = '';
-          $qt = "SELECT textarea,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
-              . "AND suid = '".$survey['suid']."' AND textarea != '') AND quid = '$v' AND suid = '".$survey['suid']."' AND textarea != '' LIMIT 1";
-          $rt = mysql_query($qt) or fnErrorDie("WVMMSURVEY: updateOutput problems getting textarea for radio");
-          if (mysql_num_rows($rt) > 0) {
-            $textarea = mysql_result($rt,0);
-            $response = mysql_result($rt,0,1);
-          } else {
-            $response = "0000-00-00 00:00:00";
-          }
-          $qr = "SELECT radio,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
-              . "AND suid = '".$survey['suid']."' AND radio != '') AND quid = '$v' AND suid = '".$survey['suid']."' AND radio != '' LIMIT 1";
-          $rr = mysql_query($qr) or fnErrorDie("WVMMSURVEY: updateOutput problems getting radio");
-          if (mysql_num_rows($rr) > 0) {
-            $rarr = explode("~",mysql_result($rr,0));
-            $radio = $rarr[0];
-            if (isset($rarr[1])) { $rating = $rarr[1]; } else { $rating = ''; }
-            $response = ($response > mysql_result($rr,0,1)) ? $response : mysql_result($rr,0,1);
-          }
-          $max = maxRatingValue($v);
-          if ($textarea != '' || $radio != '') {
-            $qu = "INSERT INTO Output (muid,suid,quid,sap,store,month,email,rating,maxrating,qtext,notestext,radio,textarea,response) "
-                . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','$storedesc','$month','"
-                . $survey['email']."','$rating','$max','".mysql_real_escape_string($qtext)."','".mysql_real_escape_string($notestext)."','$radio','"
-                . mysql_real_escape_string($textarea)."','".mysql_real_escape_string($response)."')";
-            $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
-          }
-          break;
-      }
-    }
-  }
+  // This function has been replaced by the updateOutput.go program
+  // It will be completely removed in a future release
+  // // Updates the output table with data from the results table
+  // // Populate the output table with every survey, each question in the survey, the question text and notestext
+  // // Then go through the output table and populate each answer
+  // $q = "TRUNCATE TABLE Output";
+  // $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: updateOutput problems truncating output");
+  // $q = "SELECT suid,email,store,Surveys.muid,systemLastModified,Months.datedesc,Months.quids FROM Surveys "
+  //    . "INNER JOIN Months ON Months.muid = Surveys.muid";
+  // $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: updateOutput errors getting Surveys");
+  // while ($survey = mysql_fetch_assoc($r)) {
+  //   $month =  date("F Y",strtotime($survey['datedesc']));
+  //   $qarray = explode(",",$survey['quids']);
+  //   foreach ($qarray as $v) {
+  //     $q2 = "SELECT type,text,notestext FROM Questions WHERE quid = '$v'";
+  //     $r2 = mysql_query($q2) or fnErrorDie("WVMMSURVEY: updateOutput errors getting quid text");
+  //     $type = mysql_result($r2,0);
+  //     $qtext = mysql_real_escape_string(mysql_result($r2,0,1));
+  //     $notestext = mysql_real_escape_string(mysql_result($r2,0,2));
+  //     switch ($type) {
+  //       case "textbox":
+  //         $qs = "SELECT `desc` FROM Stores WHERE sap = '".$survey['store']."'";
+  //         $qr = mysql_query($qs) or fnErrorDie("WVMMSURVEY: updateOutput getting store desc");
+  //         $storedesc = mysql_result($qr, 0);
+  //         $qt = "SELECT textarea,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
+  //             . "AND suid = '".$survey['suid']."') AND quid = '$v' AND suid = '".$survey['suid']."' LIMIT 1";
+  //         $rt = mysql_query($qt) or fnErrorDie("WVMMSURVEY: updateOutput problems getting textarea");
+  //         if (mysql_num_rows($rt) > 0) {
+  //           $textarea = mysql_result($rt,0);
+  //           $response = mysql_result($rt,0,1);
+  //           $qu = "INSERT INTO  Output (muid,suid,quid,sap,store,month,email,qtext,textarea,response) "
+  //               . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','".mysql_real_escape_string($storedesc)."','$month','"
+  //               . $survey['email']."','".mysql_real_escape_string($qtext)."','".mysql_real_escape_string($textarea)."','".mysql_real_escape_string($response)."')";
+  //           $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
+  //         }
+  //         break;
+  //       case "radio":
+  //         $textarea = $radio = '';
+  //         $qt = "SELECT textarea,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
+  //             . "AND suid = '".$survey['suid']."' AND textarea != '') AND quid = '$v' AND suid = '".$survey['suid']."' AND textarea != '' LIMIT 1";
+  //         $rt = mysql_query($qt) or fnErrorDie("WVMMSURVEY: updateOutput problems getting textarea for radio");
+  //         if (mysql_num_rows($rt) > 0) {
+  //           $textarea = mysql_result($rt,0);
+  //           $response = mysql_result($rt,0,1);
+  //         } else {
+  //           $response = "0000-00-00 00:00:00";
+  //         }
+  //         $qr = "SELECT radio,updated FROM Results WHERE updated = (SELECT MAX(updated) FROM Results WHERE quid = '$v' "
+  //             . "AND suid = '".$survey['suid']."' AND radio != '') AND quid = '$v' AND suid = '".$survey['suid']."' AND radio != '' LIMIT 1";
+  //         $rr = mysql_query($qr) or fnErrorDie("WVMMSURVEY: updateOutput problems getting radio");
+  //         if (mysql_num_rows($rr) > 0) {
+  //           $rarr = explode("~",mysql_result($rr,0));
+  //           $radio = $rarr[0];
+  //           if (isset($rarr[1])) { $rating = $rarr[1]; } else { $rating = ''; }
+  //           $response = ($response > mysql_result($rr,0,1)) ? $response : mysql_result($rr,0,1);
+  //         }
+  //         $max = maxRatingValue($v);
+  //         if ($textarea != '' || $radio != '') {
+  //           $qu = "INSERT INTO Output (muid,suid,quid,sap,store,month,email,rating,maxrating,qtext,notestext,radio,textarea,response) "
+  //               . "VALUES ('".$survey['muid']."','".$survey['suid']."','$v','".$survey['store']."','$storedesc','$month','"
+  //               . $survey['email']."','$rating','$max','".mysql_real_escape_string($qtext)."','".mysql_real_escape_string($notestext)."','$radio','"
+  //               . mysql_real_escape_string($textarea)."','".mysql_real_escape_string($response)."')";
+  //           $ru = mysql_query($qu) or fnErrorDie("WVMMSURVEY: updateOutput problems inserting initial record: " . mysql_error());
+  //         }
+  //         break;
+  //     }
+  //   }
+  // }
   echo 0;
 }
 
