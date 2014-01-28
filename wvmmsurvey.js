@@ -435,7 +435,7 @@ wvmmsurvey.make = {
           html += "<tr class='" + (eo % 2 == 0 ? 'evenrow' : 'oddrow') + "'>"
           // Sort column
                + "<td style='text-align:center;'>"
-               + "<a href='javascript:;' class='row-controls' id='add' title='Add a new row under this one'"
+               + "<a href='javascript:;' class='row-controls' id='add' title='Add a new row above this one'"
                + " onclick='wvmmsurvey.act.popupRow(\"Add\"," + val['quid'] + ")'>+</a>"
                + "<a href='javascript:;' class='row-controls' id='del' title='Delete this row'"
                + " onclick='wvmmsurvey.act.popupRow(\"Del\"," + val['quid'] + ")'>-</a>"

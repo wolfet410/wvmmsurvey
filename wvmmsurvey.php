@@ -217,40 +217,46 @@ function actWriteQuestions() {
 }
 
 function rowAdd() {
-  $quid = safe($_POST['quid']);
-  // Get sort value of the row we are adding below
-  $q = "SELECT sort FROM Questions WHERE quid = $quid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting sort value: " . mysql_error());
-  $below = mysql_result($r,0);
-  // Increment the sort value of all of the rows under the current row
-  $q = "UPDATE Questions SET sort = sort + 1 WHERE active = 'true' AND sort > $below";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems changing sort values: " . mysql_error());
-  // Add a new row at sort+1 with a new quid
-  $q = "INSERT INTO Questions (`active`, `sort`, `table`, `type`, `notes`) VALUES ('true', '" . (++$below)
-     . "', 'false', 'heading', 'false')";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems adding row: " . mysql_error());
-  // Sending the quid of the row that is above the new row, for scrolling
-  echo $quid;
+  $qBefore = safe($_POST['quid']);
+  $muid = safe($_POST['muid']);
+  // Pull qnums into an array and work them
+  $q = "SELECT quids FROM Months WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: SQL quids from Months: " . mysql_error());
+  $quids = mysql_result($r,0);
+  $arrQuids = explode(",",$quids);
+  // Creating new blank question
+  $q = "INSERT INTO Questions (`table`, `rated`, `type`, `notes`) VALUES ('false', 'false', 'heading', 'false')";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems adding question: " . mysql_error());
+  $newQuid = mysql_insert_id();
+  $keyBefore = array_search($qBefore, $arrQuids);
+  // Add $newQuid to $arrQuids in the right spot
+  array_splice($arrQuids, $keyBefore, 0, $newQuid);
+  $quids = implode(",",$arrQuids);
+  $q = "UPDATE Months SET quids = '$quids' WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems writing new add quids: " . mysql_error());
+  // Sending the new quid for scrolling
+  echo $newQuid;
 }
 
 function rowDel() {
   $quid = safe($_POST['quid']);
-  // Get sort value of the row that we are deleting
-  $q = "SELECT sort FROM Questions WHERE quid = $quid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting del sort value: " . mysql_error());
-  $sort = mysql_result($r,0);
-  // Get the quid of the row above the one we are deleting, so we can scroll to it later
-  $above = 0;
-  if ($sort > 2) {
-    // If it's the first couple rows, we aren't going to bother scrolling anywhere
-    $q = "SELECT quid FROM Questions WHERE sort = " . --$sort;
-    $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems getting above row during del: " . mysql_error());
-    $above = mysql_result($r,0);
+  $muid = safe($_POST['muid']);
+  // Pull qnums into an array and work them
+  $q = "SELECT quids FROM Months WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: SQL quids from Months: " . mysql_error());
+  $quids = mysql_result($r,0);
+  $arrQuids = explode(",",$quids);
+  // Deletes all occurances of $quids in $arrQuids
+  foreach (array_keys($arrQuids, $quid, true) as $key) {
+      unset($arrQuids[$key]);
   }
-  $q = "UPDATE Questions SET active = 'false' WHERE quid = $quid";
-  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems deactivating row: " . mysql_error());
-  // Sending the quid of the row that was sorted above the old row, for scrolling
-  echo $above;
+  $qBefore = ($key != 0) ? $arrQuids[$key-1] : 0;
+  // Updating Months table with new array converted to string
+  $quids = implode(",",$arrQuids);
+  $q = "UPDATE Months SET quids = '$quids' WHERE muid = $muid";
+  $r = mysql_query($q) or fnErrorDie("WVMMSURVEY: Problems writing new del quids: " . mysql_error());
+  // Sending the quid above the deleted row for scrolling
+  echo $qBefore;
 }
 
 function rowSwap() {
