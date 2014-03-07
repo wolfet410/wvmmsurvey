@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Wireless Vision Market Manager Survey</title>
     <link rel="stylesheet" href="print.css">
-    <script src="../lib/js/jquery-1.8.2.js"></script>
-    <script src="../lib/js/dtc.js"></script>
+    <script src="/dtclib/js/jquery-1.8.2.js"></script>
+    <script src="/dtclib/js/dtc.js"></script>
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {

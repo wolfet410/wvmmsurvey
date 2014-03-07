@@ -1,8 +1,8 @@
 <?php
 // DTC specific includes
 session_start();
-require "/var/www/constants-wv.inc";
-require "/var/www/lib/php/library.php";
+require "/var/www/wv.datatechcafe.com/constants-wv.inc";
+require "/var/www/wv.datatechcafe.com/dtclib/php/library.php";
 
 // Initializing variables and open DB
 fnOpenDatabase($DBSERVER,$DBUSER,$DBPASSWD,$DB);
@@ -59,7 +59,11 @@ function makeSelectStore() {
 function makeAdminSurvey() {
   // Populate the drop down lists for the admin survey page
   $where = safe($_POST['list']) == 'editable' ? 'datedesc > CURRENT_DATE()' : '';
-  $where = safe($_POST['list']) == 'select' ? 'datedesc <= CURRENT_DATE()' : $where;
+/******************************************
+* Temporary fix for February 2014!!!
+******************************************/
+  // $where = safe($_POST['list']) == 'select' ? 'datedesc <= CURRENT_DATE()' : $where;
+  $where = safe($_POST['list']) == 'select' ? $where : $where;
   echo fnQueryJSON("muid,DATE_FORMAT(datedesc,'%M %Y') AS monthdesc","Months",$where,"datedesc");
 }
 

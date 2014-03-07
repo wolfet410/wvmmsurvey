@@ -5,14 +5,14 @@
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Wireless Vision Market Manager Survey</title>
-    <link rel="stylesheet" href="../lib/css/buttons.css">
-    <link rel="stylesheet" href="../lib/css/columns.css">
-    <link rel="stylesheet" href="../lib/css/chosen.css">
-    <link rel="stylesheet" href="../lib/css/anytime.css">
+    <link rel="stylesheet" href="/dtclib/css/buttons.css">
+    <link rel="stylesheet" href="/dtclib/css/columns.css">
+    <link rel="stylesheet" href="/dtclib/css/chosen.css">
+    <link rel="stylesheet" href="/dtclib/css/anytime.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
-    <script src="../lib/js/jquery-1.8.2.js"></script>
-    <script src="../lib/js/chosen.jquery.js"></script>
-    <?php echo '<script src="../lib/js/dtc.js?' . time() . '"></script>'; ?>
+    <script src="/dtclib/js/jquery-1.8.2.js"></script>
+    <script src="/dtclib/js/chosen.jquery.js"></script>
+    <?php echo '<script src="/dtclib/js/dtc.js?' . time() . '"></script>'; ?>
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {
@@ -21,7 +21,11 @@
         $('#dropdownMonth').change(function () { 
           wvmmsurvey.make.select('all','region'); 
           $('input:radio[name="filter"][value="region"]').attr('checked', 'checked');
-          if ($('#dropdownMonth option:selected').text() == '<?php echo date("F Y"); ?>') {
+/******************************************
+* Temporary fix for February 2014!!!
+******************************************/
+          // if ($('#dropdownMonth option:selected').text() == '<?php echo date("F Y"); ?>') {
+          if ($('#dropdownMonth option:selected').text() == '<?php echo date("F Y"); ?>' || $('#dropdownMonth option:selected').text() == 'February 2015') {
             $('.edittext').empty();
             $("<span>Edit</span>").appendTo('.edittext');
             $(".editimg").attr("src","img/editsmall.png");

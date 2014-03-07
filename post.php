@@ -2,7 +2,7 @@
 <html>
   <head>
     <?php 
-      require "/var/www/lib/php/library.php";
+      require "/var/www/wv.datatechcafe.com/dtclib/php/library.php";
       session_start();
       $_SESSION['admin'] = $_POST['admin'];
       $_SESSION['email'] = $_POST['email'];
@@ -12,12 +12,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="format-detection" content="telephone=no">
     <title>Wireless Vision Market Manager Survey</title>
-    <link rel="stylesheet" href="../lib/css/buttons.css">
+    <link rel="stylesheet" href="/dtclib/css/buttons.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
-    <link rel="stylesheet" href="../lib/css/messi.css">
-    <script src="../lib/js/jquery-1.8.2.js"></script>
-    <script src="../lib/js/jquery.SPServices-2013.01.min.js"></script>
-    <script src="../lib/js/messi.min.js"></script>
+    <link rel="stylesheet" href="/dtclib/css/messi.css">
+    <script src="/dtclib/js/jquery-1.8.2.js"></script>
+    <script src="/dtclib/js/jquery.SPServices-2013.01.min.js"></script>
+    <script src="/dtclib/js/messi.min.js"></script>
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {

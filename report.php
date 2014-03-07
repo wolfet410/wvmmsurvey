@@ -5,19 +5,19 @@
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Wireless Vision Market Manager Survey</title>
-    <link rel="stylesheet" href="../lib/css/buttons.css">
-    <link rel="stylesheet" href="../lib/css/chosen.css">
-    <link rel="stylesheet" href="../lib/css/anytime.css">
-    <link rel="stylesheet" href="../lib/css/messi.css">
-    <link rel="stylesheet" href="../lib/css/columns.css">
-    <link rel="stylesheet" href="../lib/css/jquery-ui-1.10.3.smoothness.css">
+    <link rel="stylesheet" href="/dtclib/css/buttons.css">
+    <link rel="stylesheet" href="/dtclib/css/chosen.css">
+    <link rel="stylesheet" href="/dtclib/css/anytime.css">
+    <link rel="stylesheet" href="/dtclib/css/messi.css">
+    <link rel="stylesheet" href="/dtclib/css/columns.css">
+    <link rel="stylesheet" href="/dtclib/css/jquery-ui-1.10.3.smoothness.css">
     <link rel="stylesheet" href="wvmmsurvey.css">
-    <script src="../lib/js/jquery-1.8.2.js"></script>
-    <script src="../lib/js/jquery.csv-0.71.min.js"></script>
-    <script src="../lib/js/chosen.jquery.min.js"></script>
-    <script src="../lib/js/anytime.js"></script>
-    <script src="../lib/js/messi.min.js"></script>
-    <script src="../lib/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="/dtclib/js/jquery-1.8.2.js"></script>
+    <script src="/dtclib/js/jquery.csv-0.71.min.js"></script>
+    <script src="/dtclib/js/chosen.jquery.min.js"></script>
+    <script src="/dtclib/js/anytime.js"></script>
+    <script src="/dtclib/js/messi.min.js"></script>
+    <script src="/dtclib/js/jquery-ui-1.10.3.custom.min.js"></script>
     <?php echo '<script src="wvmmsurvey.js?' . time() . '"></script>'; ?>
     <script>
       $(document).ready(function() {

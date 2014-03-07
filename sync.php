@@ -2,9 +2,9 @@
 <html>
   <head>
     <title>Wireless Vision Market Manager Survey</title>
-    <link rel="stylesheet" href="http://buzzspace.datatechcafe.com/wvmmsurvey/wvmmsurvey.css">
-    <link rel="stylesheet" href="http://buzzspace.datatechcafe.com/lib/css/messi.css">
-    <script src="http://buzzspace.datatechcafe.com/lib/js/messi.min.js"></script>
+    <link rel="stylesheet" href="https://wv.datatechcafe.com/wvmmsurvey.css">
+    <link rel="stylesheet" href="https://wv.datatechcafe.c/dtclib/css/messi.css">
+    <script src="https://wv.datatechcafe.c/dtclib/js/messi.min.js"></script>
     <script>
       $(document).ready(function() {
         $('#syncbtn').click( function () {
@@ -22,14 +22,14 @@
           });
           $('#beginsync').css('display','none');
           $('#iframesync').css('display','block');
-          wvmmsurvey.sharepoint.pass('stores','http://buzzspace.datatechcafe.com/wvmmsurvey/syncrun.php',JSON.stringify(wvmmsurvey.sharepoint.stores()));
+          wvmmsurvey.sharepoint.pass('stores','https://wv.datatechcafe.com/wvmmsurvey/syncrun.php',JSON.stringify(wvmmsurvey.sharepoint.stores()));
         });
       });
     </script>
   </head>
   <body>
     <div id="beginsync">
-      <p class="center"><a id="syncbtn" href="javascript:;"><img src="http://buzzspace.datatechcafe.com/wvmmsurvey/img/sync.png" class="btnimg"></a></p>
+      <p class="center"><a id="syncbtn" href="javascript:;"><img src="https://wv.datatechcafe.com/img/sync.png" class="btnimg"></a></p>
     </div>
   </body>
 </html>
