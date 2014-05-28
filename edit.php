@@ -27,7 +27,11 @@
         $(document).find(':input').each(function() {
           switch(this.type) {
             case 'textarea':
-              if (thisMonth == $('#surveyInfo').text()) {
+/******************************************
+* Temporary fix for February 2014!!!
+******************************************/
+//              if (thisMonth == $('#surveyInfo').text()) {
+              if (thisMonth == $('#surveyInfo').text() || $('#surveyInfo').text() == 'February 2015') {
                 $('textarea#'+this.id).change(function () { 
                   wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'textarea',$('textarea#'+this.id).val(),$('#suid').val()); 
                 });
@@ -37,7 +41,11 @@
               break;
             case 'radio':
               if (dtc.lib.findStrInArray(this.id,radios) == -1) {
-                if (thisMonth == $('#surveyInfo').text()) {
+/******************************************
+* Temporary fix for February 2014!!!
+******************************************/
+//              if (thisMonth == $('#surveyInfo').text()) {
+              if (thisMonth == $('#surveyInfo').text() || $('#surveyInfo').text() == 'February 2015') {
                   $('input:radio[name='+this.id+']').click(function() {
                     wvmmsurvey.act.save(this.id.match(/[0-9]+/g),'radio',$('input:radio[name='+this.id+']:checked').val(),$('#suid').val()); 
                   });

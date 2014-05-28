@@ -34,7 +34,7 @@
              . mysql_real_escape_string($v['Region']) . "');";
           $r = mysql_query($q) or fnErrorLog("WVMMSURVEY: syncrun.php error adding store:" . mysql_error());
         }
-        print("All done syncing Store list to database!");
+        print("The Store list has been synchronized to the database!");
       ?>
     </div>
   </body>

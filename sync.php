@@ -3,26 +3,19 @@
   <head>
     <title>Wireless Vision Market Manager Survey</title>
     <link rel="stylesheet" href="https://wv.datatechcafe.com/wvmmsurvey.css">
-    <link rel="stylesheet" href="https://wv.datatechcafe.c/dtclib/css/messi.css">
-    <script src="https://wv.datatechcafe.c/dtclib/js/messi.min.js"></script>
+    <link rel="stylesheet" href="https://wv.datatechcafe.com/dtclib/css/messi.css">
+    <script src="https://wv.datatechcafe.com/dtclib/js/messi.min.js"></script>
     <script>
       $(document).ready(function() {
         $('#syncbtn').click( function () {
-
-
-// NEED TO CHANGE THIS MESSI TO PROMPT USER FOR A CONFIRMATION AND TELL THEM A NEW WINDOW WILL OPEN, 
-// AND TO LEAVE THE COMPUTER ALONE UNTIL IT RETURNS AN "OKAY" MESSAGE
-
-
-
-          new Messi.img('This is going to take a while', {
+          new Messi.img('The sync process is starting', {
             title: 'Please wait ....',
             buttons: [{id: 0, label: 'OK', val: ''}],
             modal: true
           });
           $('#beginsync').css('display','none');
           $('#iframesync').css('display','block');
-          wvmmsurvey.sharepoint.pass('stores','https://wv.datatechcafe.com/wvmmsurvey/syncrun.php',JSON.stringify(wvmmsurvey.sharepoint.stores()));
+          wvmmsurvey.sharepoint.pass('stores','https://wv.datatechcafe.com/syncrun.php',JSON.stringify(wvmmsurvey.sharepoint.stores()));
         });
       });
     </script>

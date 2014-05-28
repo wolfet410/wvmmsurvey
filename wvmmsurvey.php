@@ -497,6 +497,7 @@ function csvRatings() {
     foreach($months as $month) {
       $ratingTotal = $ratingMaximum = 0;
       $where = "sap = '" . $sapArr['sap'] . "' AND month = '$month'";
+fnErrorLog("WVMMSURVEY: $qs");
       $qs = "SELECT rating,maxrating FROM Output WHERE $where";
       $rs = mysql_query($qs) or fnErrorDie("WVMMSURVEY: csvBySurvey problems getting survey data:" . mysql_error());
       while ($a = mysql_fetch_assoc($rs)) {
